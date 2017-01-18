@@ -154,11 +154,7 @@ public class Identity
    {
       this.memberships.clear();
       this.memberships.addAll(memberships);
-      this.groups = new HashSet<String>();
-      for (MembershipEntry m : memberships)
-      {
-         groups.add(m.getGroup());
-      }
+      this.groups = memberships.stream().map(m -> m.getGroup()).collect(Collectors.toSet());
    }
 
    /**
