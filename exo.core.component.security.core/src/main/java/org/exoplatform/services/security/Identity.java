@@ -62,6 +62,8 @@ public class Identity
     */
    private final Set<String> roles;
 
+   private Set<String> groups;
+   
    /**
     * @param userId the user's identifier.
     */
@@ -91,7 +93,12 @@ public class Identity
          SecureCollections.secureSet(new MembershipHashSet(memberships),
             PermissionConstants.MODIFY_IDENTITY_PERMISSION);
       this.roles =
-         SecureCollections.secureSet(new HashSet<String>(roles), PermissionConstants.MODIFY_IDENTITY_PERMISSION);;
+         SecureCollections.secureSet(new HashSet<String>(roles), PermissionConstants.MODIFY_IDENTITY_PERMISSION);
+      this.groups = new HashSet<String>();
+      for (MembershipEntry m : memberships)
+      {
+         groups.add(m.getGroup());
+      }
    }
 
    /**
@@ -155,6 +162,11 @@ public class Identity
    {
       this.memberships.clear();
       this.memberships.addAll(memberships);
+      this.groups = new HashSet<String>();
+      for (MembershipEntry m : memberships)
+      {
+         groups.add(m.getGroup());
+      }
    }
 
    /**
