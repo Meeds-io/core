@@ -23,6 +23,7 @@ import org.exoplatform.commons.utils.secure.SecureCollections;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.security.auth.Subject;
 
@@ -94,11 +95,7 @@ public class Identity
             PermissionConstants.MODIFY_IDENTITY_PERMISSION);
       this.roles =
          SecureCollections.secureSet(new HashSet<String>(roles), PermissionConstants.MODIFY_IDENTITY_PERMISSION);
-      this.groups = new HashSet<String>();
-      for (MembershipEntry m : memberships)
-      {
-         groups.add(m.getGroup());
-      }
+      this.groups = memberships.stream().map(m -> m.getGroup()).collect(Collectors.toSet());
    }
 
    /**
@@ -146,11 +143,6 @@ public class Identity
     */
    public Set<String> getGroups()
    {
-      Set<String> groups = new HashSet<String>();
-      for (MembershipEntry m : memberships)
-      {
-         groups.add(m.getGroup());
-      }
       return groups;
    }
 
