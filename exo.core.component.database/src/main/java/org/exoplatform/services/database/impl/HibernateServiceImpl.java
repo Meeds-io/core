@@ -31,6 +31,8 @@ import org.exoplatform.container.xml.Property;
 import org.exoplatform.services.cache.CacheService;
 import org.exoplatform.services.database.HibernateService;
 import org.exoplatform.services.database.ObjectQuery;
+import org.exoplatform.services.database.utils.DialectConstants;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.hibernate.HibernateException;
@@ -39,9 +41,14 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.io.Serializable;
 import java.net.URL;
 import java.security.PrivilegedAction;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +76,8 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
 
    private SessionFactory sessionFactory_;
 
+   private String dialect ;
+
    public HibernateServiceImpl(InitParams initParams, CacheService cacheService)
    {
       threadLocal_ = new ThreadLocal<Session>();
@@ -95,6 +104,23 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
             connectionURL.replace("${java.io.tmpdir}", PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
          conf_.setProperty("hibernate.connection.url", connectionURL);
       }
+
+      try
+      {
+         DataSource dataSource = getDatasource(conf_.getProperty("hibernate.connection.datasource"));
+         if(dataSource != null)
+         {
+            dialect = JDBCUtils.resolveDialect(dataSource);
+         }
+         else
+         {
+            dialect = AUTO_DIALECT;
+         }
+      }
+      catch (SQLException e)
+      {
+         dialect = AUTO_DIALECT;
+      }
    }
 
    public void addPlugin(ComponentPlugin plugin)
@@ -113,6 +139,14 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
                for (int i = 0; i < path.size(); i++)
                {
                   String relativePath = (String)path.get(i);
+                  if(dialect.startsWith(DialectConstants.DB_DIALECT_MYSQL))
+                  {
+                     relativePath = relativePath.replace("mappings", "mysql-mappings");
+                  }
+                  else if(dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE))
+                  {
+                     relativePath = relativePath.replace("mappings", "sybase-mappings");
+                  }
                   if (!mappings_.contains(relativePath))
                   {
                      mappings_.add(relativePath);
@@ -354,5 +388,24 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
    public void endRequest(ExoContainer container)
    {
       closeSession();
+   }
+
+   /**
+    * Lookup for a datasource with the given name
+    * @param datasourceName Name of the datasource to retrieve
+    * @return The datasource with the given name
+    */
+   private DataSource getDatasource(String datasourceName) {
+      DataSource dataSource = null;
+      try {
+         Context initCtx = new InitialContext();
+
+         // Look up our data source
+         dataSource = (DataSource) initCtx.lookup(datasourceName);
+      } catch (NamingException e) {
+         LOG.error("Cannot find datasource " + datasourceName + " - Cause : " + e.getMessage(), e);
+      }
+
+      return dataSource;
    }
 }
