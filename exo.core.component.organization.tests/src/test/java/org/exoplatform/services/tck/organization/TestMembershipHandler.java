@@ -243,10 +243,10 @@ public class TestMembershipHandler extends AbstractOrganizationServiceTest
       try
       {
          memberships.load(1, 4);
-         fail("Exception should be thrown");
       }
       catch (Exception e)
       {
+         fail("Exception should be thrown");
       }
 
       // try to find for non-existing group
