@@ -138,6 +138,20 @@ public interface GroupHandler
 
    /**
     * Use this method to find all the children group of a group.
+    *
+    * @param parent The group that you want to search. Use null if you want to
+    *          search from the root.
+    * @param keyword The name keyword
+    * @return A {@link ListAccess} of the children group of type {@link Group}
+    * @throws Exception An exception is thrown is the method cannot access the
+    *           database
+    */
+   default ListAccess<Group> findGroupChildren(Group parent, String keyword) throws Exception {
+     throw new UnsupportedOperationException();
+   }
+
+   /**
+    * Use this method to find all the children group of a group.
     * 
     * @param parent The group that you want to search. Use null if you want to
     *          search from the root.

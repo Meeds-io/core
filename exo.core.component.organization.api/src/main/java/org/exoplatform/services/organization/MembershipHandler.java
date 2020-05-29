@@ -162,6 +162,19 @@ public interface MembershipHandler
    ListAccess<Membership> findAllMembershipsByGroup(Group group) throws Exception;
 
    /**
+    * Use this method to find all the membership in a group. Note that an user
+    * can have more than one membership in a group. For example , user admin can
+    * have membership 'member' and 'admin' in the group '/users'
+    * 
+    * @param user
+    * @return the list of the memberships
+    * @throws Exception
+    */
+   default ListAccess<Membership> findAllMembershipsByUser(User user) throws Exception {
+     throw new UnsupportedOperationException();
+   }
+
+   /**
     * Use this method to register a membership event listener.
     * 
     * @param listener the listener instance.
