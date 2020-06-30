@@ -355,4 +355,10 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
    {
       closeSession();
    }
+
+   @Override
+  public boolean isStarted(ExoContainer container) {
+     Session s = threadLocal_.get();
+     return s != null && s.isOpen();
+  }
 }
