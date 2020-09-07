@@ -186,6 +186,62 @@ public class TestMembershipHandler extends AbstractOrganizationServiceTest
    }
 
    /**
+    * Test find all membershipTypes linked to this group
+    * @throws Exception
+    */
+   public void testFindMembershipTypesByGroup() throws Exception {
+
+      Group users, testGroup = null;
+      try {
+         createUser(userName);
+         assertEquals(1, mHandler.findMembershipTypesByGroup("/platform/users").size());
+
+         testGroup = gHandler.createGroupInstance();
+         testGroup.setGroupName("testGroup");
+         testGroup.setLabel("Testing Group");
+         gHandler.addChild(null, testGroup, false);
+
+         assertEquals(0, mHandler.findMembershipTypesByGroup("/testGroup").size());
+
+         mHandler.linkMembership(uHandler.findUserByName(userName), testGroup,
+                 mtHandler.findMembershipType(MembershipTypeHandler.ANY_MEMBERSHIP_TYPE), true);
+
+         assertEquals(1, mHandler.findMembershipTypesByGroup("/testGroup").size());
+
+         // Add another user
+         String ali = "ali";
+         createUser(ali);
+
+         mHandler.linkMembership(uHandler.findUserByName(ali), testGroup,
+                 mtHandler.findMembershipType(MembershipTypeHandler.ANY_MEMBERSHIP_TYPE), true);
+
+         assertEquals(1, mHandler.findMembershipTypesByGroup("/testGroup").size());
+
+         createMembershipType(membershipType, "desc");
+         mHandler.linkMembership(uHandler.findUserByName(ali), testGroup,
+                 mtHandler.findMembershipType(membershipType), true);
+
+         assertEquals(2, mHandler.findMembershipTypesByGroup("/testGroup").size());
+
+
+         Membership membership = mHandler.findMembershipByUserGroupAndType(userName,"/testGroup", MembershipTypeHandler.ANY_MEMBERSHIP_TYPE);
+         mHandler.removeMembership(membership.getId(), true);
+
+         assertEquals(2, mHandler.findMembershipTypesByGroup("/testGroup").size());
+
+         // remove all memberships of ali
+         membership = mHandler.findMembershipByUserGroupAndType(ali,"/testGroup", membershipType);
+         mHandler.removeMembership(membership.getId(), true);
+
+         // we have 2 membership types * and type
+         assertEquals(1, mHandler.findMembershipTypesByGroup("/testGroup").size());
+      } catch (UnsupportedOperationException unsupportedOperationException) {
+         //Expected if this function was not implemented
+      }
+   }
+
+
+   /**
     * Find membership by group.
     */
    public void testFindMembershipsByGroup() throws Exception
