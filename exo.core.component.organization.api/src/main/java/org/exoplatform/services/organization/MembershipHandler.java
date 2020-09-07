@@ -21,6 +21,7 @@ package org.exoplatform.services.organization;
 import org.exoplatform.commons.utils.ListAccess;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS<br>
@@ -171,6 +172,16 @@ public interface MembershipHandler
     * @throws Exception
     */
    default ListAccess<Membership> findAllMembershipsByUser(User user) throws Exception {
+     throw new UnsupportedOperationException();
+   }
+   /**
+    * Use this method to find all the membershipTypes in a group.
+    *
+    * @param groupId ID of the group
+    * @return the list of the membershipTypes
+    * @throws Exception
+    */
+   default List<MembershipType> findMembershipTypesByGroup(String groupId) throws Exception {
      throw new UnsupportedOperationException();
    }
 
