@@ -83,6 +83,9 @@ public class DefaultRolesExtractorImpl implements RolesExtractor
             roles.add(splittedGroupName[0]);
          }
       }
+      if (roles.contains("guests") && !roles.contains("users")) {
+         roles.add("users");
+      }
       return roles;
    }
 
