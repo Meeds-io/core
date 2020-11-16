@@ -35,55 +35,45 @@ import java.util.Set;
  * @version $Id:$
  */
 
-public class DefaultRolesExtractorImpl implements RolesExtractor
-{
+public class DefaultRolesExtractorImpl implements RolesExtractor {
 
-   protected String userRoleParentGroup = null;
+  protected String userRoleParentGroup = null;
 
-   public DefaultRolesExtractorImpl(InitParams params)
-   {
-      if (params != null)
-      {
-         ValueParam param = params.getValueParam("user.role.parent.group");
-         if (param != null && param.getValue().length() > 0)
-         {
-            userRoleParentGroup = param.getValue();
-         }
+  public DefaultRolesExtractorImpl(InitParams params) {
+    if (params != null) {
+      ValueParam param = params.getValueParam("user.role.parent.group");
+      if (param != null && param.getValue().length() > 0) {
+        userRoleParentGroup = param.getValue();
       }
+    }
+  }
 
-   }
+  public DefaultRolesExtractorImpl() {
+  }
 
-   public DefaultRolesExtractorImpl()
-   {
-   }
+  public void setUserRoleParentGroup(String userRoleParentGroup) {
+    this.userRoleParentGroup = userRoleParentGroup;
+  }
 
-   public void setUserRoleParentGroup(String userRoleParentGroup)
-   {
-      this.userRoleParentGroup = userRoleParentGroup;
-   }
+  /**
+   * {@inheritDoc}
+   */
+  public Set<String> extractRoles(String userId, Set<MembershipEntry> memberships) {
 
-   /**
-    * {@inheritDoc}
-    */
-   public Set<String> extractRoles(String userId, Set<MembershipEntry> memberships)
-   {
+    Set<String> roles = new HashSet<String>();
+    for (MembershipEntry membership : memberships) {
+      String[] splittedGroupName = StringUtils.split(membership.getGroup(), "/");
 
-      Set<String> roles = new HashSet<String>();
-      for (MembershipEntry membership : memberships)
-      {
-         String[] splittedGroupName = StringUtils.split(membership.getGroup(), "/");
-
-         if (userRoleParentGroup != null && splittedGroupName[0].equals(userRoleParentGroup)
-            && splittedGroupName.length > 1)
-         {
-            roles.add(splittedGroupName[splittedGroupName.length - 1]);
-         }
-         else
-         {
-            roles.add(splittedGroupName[0]);
-         }
+      if (userRoleParentGroup != null && splittedGroupName[0].equals(userRoleParentGroup) && splittedGroupName.length > 1) {
+        roles.add(splittedGroupName[splittedGroupName.length - 1]);
       }
-      return roles;
-   }
-
+      else {
+        roles.add(splittedGroupName[0]);
+      }
+    }
+    if (roles.contains("externals") && !roles.contains("users")) {
+      roles.add("users");
+    }
+    return roles;
+  }
 }
