@@ -90,6 +90,21 @@ public class TestRolesExtractor extends TestCase
       assertTrue(extractRoles.contains("users"));
 
    }
+   
+   public void testExtractExternalRoles() throws Exception
+   {
+     Set<MembershipEntry> groups = new HashSet<MembershipEntry>(); 
+     groups.add(new MembershipEntry("/platform/externals"));
+
+     ((DefaultRolesExtractorImpl)rolesExtractor).setUserRoleParentGroup("platform");
+     Set<String> extractRoles = rolesExtractor.extractRoles("exo", groups);
+     assertNotNull(extractRoles);
+     assertFalse(extractRoles.isEmpty());
+     assertEquals(2, extractRoles.size());
+     assertTrue(extractRoles.contains("externals"));
+     assertTrue(extractRoles.contains("users"));
+      
+   }
 
    /**
     * @return set of groups to which this user belongs to
