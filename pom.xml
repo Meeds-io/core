@@ -63,8 +63,6 @@
       <module>exo.core.component.ldap</module>
       <module>exo.core.component.organization.tests</module>
       <module>exo.core.component.organization.api</module>
-      <module>exo.core.component.organization.jdbc</module>
-      <module>exo.core.component.organization.ldap</module>
       <module>exo.core.component.xml-processing</module>
       <module>exo.core.component.script.groovy</module>
       <module>exo.core.component.web.css</module>
@@ -230,13 +228,7 @@
             <artifactId>hibernate-c3p0</artifactId>
             <version>4.2.5.Final</version>
         </dependency>
-
-         <dependency>
-            <groupId>com.thoughtworks.xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.4.4</version>
-         </dependency>
-
+         
          <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
