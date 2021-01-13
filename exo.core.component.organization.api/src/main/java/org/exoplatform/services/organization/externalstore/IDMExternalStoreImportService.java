@@ -459,7 +459,7 @@ public class IDMExternalStoreImportService implements Startable {
 
       LOG.info("Retrieving all existing external users");
       List<String> externalUsernames = new ArrayList<>();
-      loadModifiedUsers(entityType, (username) -> externalUsernames.add(username), null);
+      loadModifiedUsers(entityType, (username) -> externalUsernames.add(StringUtils.lowerCase(username)), null);
       LOG.info("{} users was retrieved from external store", externalUsernames.size());
 
       int totalUsers = allStoredUsersInInternalStore.getSize();
@@ -481,7 +481,7 @@ public class IDMExternalStoreImportService implements Startable {
           }
           index++;
           String username = user.getUserName();
-          if (!externalUsernames.contains(username)) {
+          if (!externalUsernames.contains(StringUtils.lowerCase(username))) {
             // since the user is retrieved from Hibernate with only the field
             // username, we should retrieve it again from internal store with
             // all attributes
