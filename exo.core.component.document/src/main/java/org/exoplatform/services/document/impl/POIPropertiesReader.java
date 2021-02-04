@@ -18,8 +18,8 @@
  */
 package org.exoplatform.services.document.impl;
 
-import org.apache.poi.POIXMLProperties;
-import org.apache.poi.POIXMLProperties.CoreProperties;
+import org.apache.poi.ooxml.POIXMLProperties;
+import org.apache.poi.ooxml.POIXMLProperties.CoreProperties;
 import org.apache.poi.hpsf.MarkUnsupportedException;
 import org.apache.poi.hpsf.NoPropertySetStreamException;
 import org.apache.poi.hpsf.PropertySet;
@@ -42,6 +42,7 @@ import java.security.PrivilegedExceptionAction;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -78,7 +79,6 @@ public class POIPropertiesReader
       {
          throw new IllegalArgumentException("InputStream is null.");
       }
-
       @SuppressWarnings("serial")
       class POIRuntimeException extends RuntimeException
       {
@@ -189,8 +189,7 @@ public class POIPropertiesReader
          {
             throw (DocumentReadException)ex;
          }
-      }
-      finally
+      } finally
       {
          if (is != null)
          {
@@ -224,14 +223,14 @@ public class POIPropertiesReader
 
       CoreProperties coreProperties = documentProperties.getCoreProperties();
 
-      Nullable<String> lastModifiedBy = coreProperties.getUnderlyingProperties().getLastModifiedByProperty();
+      Optional<String> lastModifiedBy = coreProperties.getUnderlyingProperties().getLastModifiedByProperty();
 
       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
       df.setTimeZone(TimeZone.getDefault());
 
-      if (lastModifiedBy != null && lastModifiedBy.getValue() != null && lastModifiedBy.getValue().length() > 0)
+      if (lastModifiedBy.isPresent() && lastModifiedBy.get() != null && lastModifiedBy.get().length() > 0)
       {
-         props.put(DCMetaData.CONTRIBUTOR, lastModifiedBy.getValue());
+         props.put(DCMetaData.CONTRIBUTOR, lastModifiedBy.get());
       }
       if (coreProperties.getDescription() != null && coreProperties.getDescription().length() > 0)
       {
