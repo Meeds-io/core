@@ -43,6 +43,7 @@
       <exo.product.specification>2.6</exo.product.specification>
 
       <org.exoplatform.kernel.version>6.2.x-SNAPSHOT</org.exoplatform.kernel.version>
+      <org.exoplatform.depmgt.version>19.x-SNAPSHOT</org.exoplatform.depmgt.version>
       <org.exoplatform.framework.junit.version>1.2.4-GA</org.exoplatform.framework.junit.version>
 
       <!-- Plugins updates -->
@@ -70,6 +71,14 @@
 
    <dependencyManagement>
       <dependencies>
+          <dependency>
+              <groupId>org.exoplatform</groupId>
+              <artifactId>maven-depmgt-pom</artifactId>
+              <version>${org.exoplatform.depmgt.version}</version>
+              <type>pom</type>
+              <scope>import</scope>
+          </dependency>
+          
          <dependency>
             <groupId>org.exoplatform.tool</groupId>
             <artifactId>exo.tool.framework.junit</artifactId>
@@ -236,33 +245,9 @@
          </dependency>
 
          <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>1.8.14</version>
-         </dependency>
-
-         <dependency>
             <groupId>org.htmlparser</groupId>
             <artifactId>htmlparser</artifactId>
             <version>2.1</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>3.10.1</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-scratchpad</artifactId>
-            <version>3.10.1</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>3.10.1</version>
          </dependency>
 
          <dependency>
@@ -305,24 +290,6 @@
            <groupId>commons-pool</groupId>
            <artifactId>commons-pool</artifactId>
            <version>1.6</version>
-        </dependency>
-
-        <dependency>
-           <groupId>org.apache.tika</groupId>
-           <artifactId>tika-core</artifactId>
-           <version>1.5</version>
-        </dependency>
-
-        <dependency>
-           <groupId>org.apache.tika</groupId>
-           <artifactId>tika-parsers</artifactId>
-           <version>1.5</version>
-        </dependency>
-
-        <dependency>
-           <groupId>org.apache.xmlbeans</groupId>
-           <artifactId>xmlbeans</artifactId>
-           <version>2.6.0</version>
         </dependency>
 
         <dependency>
@@ -370,7 +337,12 @@
          <artifactId>slf4j-log4j12</artifactId>
          <scope>test</scope>
       </dependency>
-
+       <dependency>
+           <groupId>xml-apis</groupId>
+           <artifactId>xml-apis</artifactId>
+           <version>1.4.01</version>
+           <scope>test</scope>
+       </dependency>
    </dependencies>
 
 </project>
