@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.services.organization.impl.UserImpl;
 import org.picocontainer.Startable;
 
 import org.exoplatform.commons.utils.ListAccess;
@@ -831,7 +832,13 @@ public class IDMExternalStoreImportService implements Startable {
 
       // This is a mandatory treatment, thus it should not be surrounded by
       // try/catch block
+      if (externalUser.isEnabled()) {
       organizationService.getUserHandler().createUser(externalUser, true);
+      } else {
+        ((UserImpl) externalUser).setEnabled(true);
+        organizationService.getUserHandler().createUser(externalUser, true);
+        organizationService.getUserHandler().setEnabled(externalUser.getUserName(),false, true);
+      }
       internalUser = externalUser;
       try {
         // The user information creation listener triggering is optional, thus
@@ -846,19 +853,17 @@ public class IDMExternalStoreImportService implements Startable {
         isModified = updateModified && externalStoreService.isEntityModified(IDMEntityType.USER, username);
         if (isModified) {
           User externalUser = externalStoreService.getEntity(IDMEntityType.USER, username);
-          if(externalUser.isEnabled() != internalUser.isEnabled()) {
-            internalUser = organizationService.getUserHandler().setEnabled(username, externalUser.isEnabled(), true);
+          if(internalUser.isEnabled() != externalUser.isEnabled()) {
+            organizationService.getUserHandler().setEnabled(internalUser.getUserName(), externalUser.isEnabled(), true);
           }
-          if(internalUser.isEnabled()) {
-            mergeExternalToInternalUser(internalUser, externalUser);
-            organizationService.getUserHandler().saveUser(internalUser, true);
-            try {
-              // The user information creation listener triggering is optional,
-              // thus this is surrounded by try/catch
-              listenerService.broadcast(IDMExternalStoreService.USER_MODIFIED_FROM_EXTERNAL_STORE, this, internalUser);
-            } catch (Exception e) {
-              LOG.warn("Error while triggering event on user '" + username + "' data import (modification) from external store", e);
-            }
+          mergeExternalToInternalUser(internalUser, externalUser);
+          organizationService.getUserHandler().saveUser(internalUser, true);
+          try {
+            // The user information creation listener triggering is optional,
+            // thus this is surrounded by try/catch
+            listenerService.broadcast(IDMExternalStoreService.USER_MODIFIED_FROM_EXTERNAL_STORE, this, internalUser);
+          } catch (Exception e) {
+            LOG.warn("Error while triggering event on user '" + username + "' data import (modification) from external store", e);
           }
         }
         importEntityToInternalStore(IDMEntityType.USER_PROFILE, username, updateModified, updateDeleted);
@@ -895,6 +900,8 @@ public class IDMExternalStoreImportService implements Startable {
     if (externalUser.getCreatedDate() != null) {
       internalUser.setCreatedDate(externalUser.getCreatedDate());
     }
+
+    ((UserImpl) internalUser).setEnabled(externalUser.isEnabled());
     internalUser.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
   }
 
