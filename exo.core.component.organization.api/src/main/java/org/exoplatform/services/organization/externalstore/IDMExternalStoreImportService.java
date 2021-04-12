@@ -835,6 +835,8 @@ public class IDMExternalStoreImportService implements Startable {
       if (externalUser.isEnabled()) {
       organizationService.getUserHandler().createUser(externalUser, true);
       } else {
+        // while creating a user : if it is disabled we need to enabled it , create it then disable it
+        // since when creating a disabled user it throws disabled user exception.
         ((UserImpl) externalUser).setEnabled(true);
         organizationService.getUserHandler().createUser(externalUser, true);
         organizationService.getUserHandler().setEnabled(externalUser.getUserName(),false, true);
