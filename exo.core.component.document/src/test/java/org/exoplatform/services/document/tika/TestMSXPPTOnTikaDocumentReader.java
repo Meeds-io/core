@@ -51,8 +51,33 @@ public class TestMSXPPTOnTikaDocumentReader extends BaseStandaloneTest
             service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
                .getContentAsText(is);
          String expected =
-            "TEST POWERPOINT\n" + "Manchester United \n" + "AC Milan\n\n\n" + "SLIDE 2 \n" + "Eric Cantona\n" + "Kaka\n"
-               + "Ronaldo\n" + "The natural scients universitys\n\n\n";
+            "TEST POWERPOINT\n" + "Manchester United \n" + "AC Milan\n" + "SLIDE 2 \n" + "Eric Cantona\n" + "Kaka\n"
+               + "Ronaldo\n" + "The natural scients universitys\n";
+
+         assertEquals("Wrong string returned", normalizeWhitespaces(expected), normalizeWhitespaces(text));
+      }
+      finally
+      {
+         is.close();
+      }
+   }
+
+   public void testGetContentAsStringXXE() throws Exception
+   {
+      InputStream is = BaseStandaloneTest.class.getResourceAsStream("/test.pptx");
+      file = createTempFile("test", ".pptx");
+      replaceFirstInZip(is, file, "ppt/slides/slide1.xml", new String[]{"<p:sld", "<a:t>"}, new String[]{
+         "<!DOCTYPE foo [<!ELEMENT foo ANY ><!ENTITY xxe SYSTEM \"" + BaseStandaloneTest.class.getResource("/test.txt")
+            + "\">]><p:sld", "<a:t>&xxe;"});
+      is = new FileInputStream(file);
+      try
+      {
+         String text =
+            service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
+               .getContentAsText(is);
+         String expected =
+            "TEST POWERPOINT\n" + "Manchester United \n" + "AC Milan\n" + "SLIDE 2 \n" + "Eric Cantona\n" + "Kaka\n"
+               + "Ronaldo\n" + "The natural scients universitys\n";
 
          assertEquals("Wrong string returned", normalizeWhitespaces(expected), normalizeWhitespaces(text));
       }
