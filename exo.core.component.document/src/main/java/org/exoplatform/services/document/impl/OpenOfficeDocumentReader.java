@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.document.impl;
 
-import org.apache.poi.ooxml.util.SAXHelper;
+import org.apache.poi.util.SAXHelper;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.services.document.DCMetaData;
 import org.exoplatform.services.document.DocumentReadException;

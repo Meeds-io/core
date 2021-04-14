@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.document.impl;
 
-import org.apache.poi.ooxml.POIXMLProperties;
+import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
