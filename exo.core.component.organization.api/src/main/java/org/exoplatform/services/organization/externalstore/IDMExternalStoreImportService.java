@@ -833,7 +833,7 @@ public class IDMExternalStoreImportService implements Startable {
       // This is a mandatory treatment, thus it should not be surrounded by
       // try/catch block
       if (externalUser.isEnabled()) {
-      organizationService.getUserHandler().createUser(externalUser, true);
+        organizationService.getUserHandler().createUser(externalUser, true);
       } else {
         // while creating a user : if it is disabled we need to enabled it , create it then disable it
         // since when creating a disabled user it throws disabled user exception.
@@ -859,7 +859,16 @@ public class IDMExternalStoreImportService implements Startable {
             organizationService.getUserHandler().setEnabled(internalUser.getUserName(), externalUser.isEnabled(), true);
           }
           mergeExternalToInternalUser(internalUser, externalUser);
-          organizationService.getUserHandler().saveUser(internalUser, true);
+          // if user is disalbed we need to enable it , save it then created
+          // since when saving a disabled user it throws disabled user exception.
+
+          if(!internalUser.isEnabled() ) {
+            ((UserImpl) internalUser).setEnabled(true);
+            organizationService.getUserHandler().saveUser(internalUser, true);
+            organizationService.getUserHandler().setEnabled(internalUser.getUserName(), false, true);
+          }else{
+            organizationService.getUserHandler().saveUser(internalUser, true);
+          }
           try {
             // The user information creation listener triggering is optional,
             // thus this is surrounded by try/catch
@@ -902,8 +911,9 @@ public class IDMExternalStoreImportService implements Startable {
     if (externalUser.getCreatedDate() != null) {
       internalUser.setCreatedDate(externalUser.getCreatedDate());
     }
-
-    ((UserImpl) internalUser).setEnabled(externalUser.isEnabled());
+    if( !Objects.equals(externalUser.isEnabled(), internalUser.isEnabled())) {
+      ((UserImpl) internalUser).setEnabled(externalUser.isEnabled());
+    }
     internalUser.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
   }
 
