@@ -283,6 +283,11 @@ public class DummyOrganizationService extends BaseOrganizationService
          return findUsersByGroupId(groupId, UserStatus.ENABLED);
       }
 
+     
+      public ListAccess<User> findUsersByQuery(Query query, List<String> groups, UserStatus userStatus) throws Exception {
+         return findUsersByQuery(query, groups, userStatus);
+      }
+
       public ListAccess<User> findAllUsers() throws Exception
       {
          return findAllUsers(UserStatus.ENABLED);

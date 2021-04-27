@@ -21,6 +21,9 @@ package org.exoplatform.services.organization;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.commons.utils.PageList;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS <br>
  * This interface is a sub part of the organization service.
@@ -168,6 +171,18 @@ public interface UserHandler
     * @throws Exception any exception
     */
    ListAccess<User> findUsersByGroupId(String groupId) throws Exception;
+   
+   /**
+    * This method search for the users in a given  groups according to a search criteria
+    * 
+    * @param query The query object contains the search criteria.
+    * @param groupIds 
+    * @param userStatus
+    * @return return the found users in a page list according to the query and groups.
+    *
+    * @throws Exception any exception
+    */
+   ListAccess<User> findUsersByQuery(Query query, List<String> groupIds, UserStatus userStatus) throws Exception;
 
    /**
     * This method should search and return the list of the users in a given

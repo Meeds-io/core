@@ -19,12 +19,7 @@ package org.exoplatform.services.organization.cache;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.services.cache.ExoCache;
-import org.exoplatform.services.organization.Membership;
-import org.exoplatform.services.organization.Query;
-import org.exoplatform.services.organization.User;
-import org.exoplatform.services.organization.UserEventListener;
-import org.exoplatform.services.organization.UserHandler;
-import org.exoplatform.services.organization.UserStatus;
+import org.exoplatform.services.organization.*;
 
 import java.util.List;
 
@@ -152,6 +147,13 @@ public class CacheableUserHandlerImpl implements UserHandler
       return userHandler.findUsersByGroupId(groupId);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public ListAccess<User> findUsersByQuery(Query query, List<String> groupIds, UserStatus userStatus) throws Exception {
+      return userHandler.findUsersByQuery(query, groupIds, userStatus);
+   }
+   
    /**
     * {@inheritDoc}
     */
