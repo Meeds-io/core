@@ -21,7 +21,6 @@ package org.exoplatform.services.organization;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.commons.utils.PageList;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
