@@ -173,15 +173,16 @@ public interface UserHandler
    
    /**
     * This method search for the users in a given  groups according to a search criteria
-    * 
-    * @param query The query object contains the search criteria.
-    * @param groupIds 
+    *
+    * @param query      The query object contains the search criteria.
+    * @param groupIds
     * @param userStatus
     * @return return the found users in a page list according to the query and groups.
-    *
     * @throws Exception any exception
     */
-   ListAccess<User> findUsersByQuery(Query query, List<String> groupIds, UserStatus userStatus) throws Exception;
+   default ListAccess<User> findUsersByQuery(Query query, List<String> groupIds, UserStatus userStatus) throws Exception {
+      throw new UnsupportedOperationException();
+   }
 
    /**
     * This method should search and return the list of the users in a given
