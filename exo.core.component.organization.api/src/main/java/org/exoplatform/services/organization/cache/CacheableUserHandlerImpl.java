@@ -146,13 +146,6 @@ public class CacheableUserHandlerImpl implements UserHandler
    {
       return userHandler.findUsersByGroupId(groupId);
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   public ListAccess<User> findUsersByQuery(Query query, List<String> groupIds, UserStatus userStatus) throws Exception {
-      return userHandler.findUsersByQuery(query, groupIds, userStatus);
-   }
    
    /**
     * {@inheritDoc}

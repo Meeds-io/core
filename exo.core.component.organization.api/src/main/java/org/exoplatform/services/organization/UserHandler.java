@@ -155,7 +155,7 @@ public interface UserHandler
     *          group
     * @return return a page list iterator of a group of the user in the database
     * @throws Exception
-    * @deprecated use {@link #findUsersByGroupId(String)} instead
+    * @deprecated use {@link #findUsersByQuery(Query)} instead
     */
    @Deprecated
    PageList<User> findUsersByGroup(String groupId) throws Exception;
@@ -163,26 +163,15 @@ public interface UserHandler
    /**
     * This method should search and return the list of the users in a given
     * group. This method is equivalent to <code>findUsersByGroupId(groupId, UserStatus.ENABLED)</code>
-    *
+ 
     * @param groupId id of the group. The return users list should be in this
     *          group
     * @return return a page list iterator of a group of the user in the database
     * @throws Exception any exception
+    * @deprecated user {@link #findUsersByQuery(Query)} instead
     */
+   @Deprecated
    ListAccess<User> findUsersByGroupId(String groupId) throws Exception;
-   
-   /**
-    * This method search for the users in a given  groups according to a search criteria
-    *
-    * @param query      The query object contains the search criteria.
-    * @param groupIds
-    * @param userStatus
-    * @return return the found users in a page list according to the query and groups.
-    * @throws Exception any exception
-    */
-   default ListAccess<User> findUsersByQuery(Query query, List<String> groupIds, UserStatus userStatus) throws Exception {
-      throw new UnsupportedOperationException();
-   }
 
    /**
     * This method should search and return the list of the users in a given
@@ -194,7 +183,9 @@ public interface UserHandler
     *              If set to <code>UserStatus.ENABLED</code> only enabled users will be returned.
     * @return return a page list iterator of a group of the user in the database
     * @throws Exception any exception
+    * @deprecated user {@link #findUsersByQuery(Query, UserStatus)} instead
     */
+   @Deprecated
    ListAccess<User> findUsersByGroupId(String groupId, UserStatus status) throws Exception;
 
    /**
