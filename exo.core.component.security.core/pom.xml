@@ -37,7 +37,7 @@
 
    <properties>
       <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
-      <exo.test.coverage.ratio>0.20</exo.test.coverage.ratio>
+      <exo.test.coverage.ratio>0.29</exo.test.coverage.ratio>
    </properties>
 
    <dependencies>
@@ -62,16 +62,6 @@
       <dependency>
          <groupId>commons-lang</groupId>
          <artifactId>commons-lang</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.security</groupId>
-        <artifactId>jbosssx</artifactId>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.jetty.aggregate</groupId>
-        <artifactId>jetty-plus</artifactId>
-        <scope>provided</scope>
       </dependency>
    </dependencies>
 

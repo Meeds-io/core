@@ -24,9 +24,9 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
+      <artifactId>maven-parent-pom</artifactId>
       <groupId>org.exoplatform</groupId>
-      <artifactId>foundation-parent</artifactId>
-      <version>22-M02</version>
+      <version>23-M08</version>
       <relativePath />
    </parent>
 
@@ -39,21 +39,13 @@
    <description>Exoplatform SAS 'eXo Core' project.</description>
 
    <properties>
-      <exo.product.name>exo-core</exo.product.name>
-      <exo.product.specification>2.6</exo.product.specification>
-
       <org.exoplatform.kernel.version>6.2.x-SNAPSHOT</org.exoplatform.kernel.version>
-      <org.exoplatform.depmgt.version>19.x-SNAPSHOT</org.exoplatform.depmgt.version>
-      <org.exoplatform.framework.junit.version>1.2.4-GA</org.exoplatform.framework.junit.version>
-
-      <!-- Plugins updates -->
-      <version.source.plugin>2.1.2</version.source.plugin>
    </properties>
 
    <scm>
-      <connection>scm:git:git://github.com/exoplatform/core.git</connection>
-      <developerConnection>scm:git:git@github.com:exoplatform/core.git</developerConnection>
-      <url>https://github.com/exoplatform/core</url>
+      <connection>scm:git:git://github.com/meeds-io/core.git</connection>
+      <developerConnection>scm:git:git@github.com:meeds-io/core.git</developerConnection>
+      <url>https://github.com/meeds-io/core</url>
      <tag>HEAD</tag>
   </scm>
 
@@ -61,60 +53,21 @@
       <module>exo.core.component.security.core</module>
       <module>exo.core.component.database</module>
       <module>exo.core.component.document</module>
-      <module>exo.core.component.ldap</module>
+      <module>exo.core.component.script.groovy</module>
       <module>exo.core.component.organization.tests</module>
       <module>exo.core.component.organization.api</module>
       <module>exo.core.component.xml-processing</module>
-      <module>exo.core.component.script.groovy</module>
-      <module>exo.core.component.web.css</module>
    </modules>
 
    <dependencyManagement>
       <dependencies>
-          <dependency>
-              <groupId>org.exoplatform</groupId>
-              <artifactId>maven-depmgt-pom</artifactId>
-              <version>${org.exoplatform.depmgt.version}</version>
-              <type>pom</type>
-              <scope>import</scope>
-          </dependency>
-          
-         <dependency>
-            <groupId>org.exoplatform.tool</groupId>
-            <artifactId>exo.tool.framework.junit</artifactId>
-            <version>${org.exoplatform.framework.junit.version}</version>
-         </dependency>
-
          <dependency>
             <groupId>org.exoplatform.kernel</groupId>
-            <artifactId>exo.kernel.commons</artifactId>
+            <artifactId>kernel-parent</artifactId>
             <version>${org.exoplatform.kernel.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
          </dependency>
-
-         <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
-            <artifactId>exo.kernel.commons.test</artifactId>
-            <version>${org.exoplatform.kernel.version}</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
-            <artifactId>exo.kernel.component.common</artifactId>
-            <version>${org.exoplatform.kernel.version}</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
-            <artifactId>exo.kernel.container</artifactId>
-            <version>${org.exoplatform.kernel.version}</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.exoplatform.kernel</groupId>
-            <artifactId>exo.kernel.component.cache</artifactId>
-            <version>${org.exoplatform.kernel.version}</version>
-         </dependency>
-
          <dependency>
             <groupId>org.exoplatform.core</groupId>
             <artifactId>core-parent</artifactId>
@@ -122,227 +75,66 @@
             <classifier>source-release</classifier>
             <type>zip</type>
          </dependency>
-
          <dependency>
             <groupId>org.exoplatform.core</groupId>
             <artifactId>exo.core.component.database</artifactId>
             <version>${project.version}</version>
          </dependency>
-
          <dependency>
             <groupId>org.exoplatform.core</groupId>
             <artifactId>exo.core.component.document</artifactId>
             <version>${project.version}</version>
          </dependency>
-
-         <dependency>
-            <groupId>org.exoplatform.core</groupId>
-            <artifactId>exo.core.component.ldap</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-
          <dependency>
             <groupId>org.exoplatform.core</groupId>
             <artifactId>exo.core.component.organization.api</artifactId>
             <version>${project.version}</version>
          </dependency>
-
          <dependency>
-            <groupId>org.exoplatform.core</groupId>
-            <artifactId>exo.core.component.organization.jdbc</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exo.core.component.organization.tests</artifactId>
             <version>${project.version}</version>
          </dependency>
-
          <dependency>
             <groupId>org.exoplatform.core</groupId>
             <artifactId>exo.core.component.organization.tests</artifactId>
             <version>${project.version}</version>
             <classifier>test-sources</classifier>
          </dependency>
-
          <dependency>
             <groupId>org.exoplatform.core</groupId>
             <artifactId>exo.core.component.security.core</artifactId>
             <version>${project.version}</version>
          </dependency>
-
          <dependency>
-            <groupId>org.ow2.jotm</groupId>
-            <artifactId>jotm-core</artifactId>
-            <version>2.1.9</version>
+            <groupId>org.exoplatform.core</groupId>
+            <artifactId>exo.core.component.xml-processing</artifactId>
+            <version>${project.version}</version>
          </dependency>
-
          <dependency>
-           <groupId>org.jboss.security</groupId>
-           <artifactId>jbosssx</artifactId>
-           <version>2.0.5.SP3-1</version>
+            <groupId>org.exoplatform.core</groupId>
+            <artifactId>exo.core.component.script.groovy</artifactId>
+            <version>${project.version}</version>
          </dependency>
-
-         <dependency>
-           <groupId>org.eclipse.jetty.aggregate</groupId>
-           <artifactId>jetty-plus</artifactId>
-           <version>8.1.12.v20130726</version>
-         </dependency>
-
-         <dependency>
-            <groupId>javax.resource</groupId>
-            <artifactId>connector-api</artifactId>
-            <version>1.5</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.5</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-all</artifactId>
-            <version>1.5.7</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>3.18.0-GA</version>
-         </dependency>
-
-         <dependency>
-            <artifactId>hsqldb</artifactId>
-            <groupId>org.hsqldb</groupId>
-            <version>2.4.0</version>
-         </dependency>
-
-         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-         </dependency>
-
-         <dependency>
-            <groupId>com.experlog</groupId>
-            <artifactId>xapool</artifactId>
-            <version>1.5.0</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>4.2.5.Final</version>
-         </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-c3p0</artifactId>
-            <version>4.2.5.Final</version>
-        </dependency>
-         
-         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>2.4.11</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.htmlparser</groupId>
-            <artifactId>htmlparser</artifactId>
-            <version>2.1</version>
-         </dependency>
-
-         <dependency>
-            <groupId>com.novell.ldap</groupId>
-            <artifactId>jldap</artifactId>
-            <version>4.3</version>
-         </dependency>
-
-         <dependency>
-            <groupId>net.sf.jtidy</groupId>
-            <artifactId>jtidy</artifactId>
-            <version>r938</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.w3c</groupId>
-            <artifactId>sac</artifactId>
-            <version>1.3</version>
-         </dependency>
-
-         <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-util</artifactId>
-            <version>1.7</version>
-         </dependency>
-
-         <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-css</artifactId>
-            <version>1.7</version>
-         </dependency>
-
-        <dependency>
-           <groupId>commons-dbcp</groupId>
-           <artifactId>commons-dbcp</artifactId>
-           <version>1.4</version>
-        </dependency>
-
-        <dependency>
-           <groupId>commons-pool</groupId>
-           <artifactId>commons-pool</artifactId>
-           <version>1.6</version>
-        </dependency>
-
-        <dependency>
-           <groupId>org.ow2.spec.ee</groupId>
-           <artifactId>ow2-jta-1.1-spec</artifactId>
-           <version>1.0.13</version>
-        </dependency>
-
-        <dependency>
-           <artifactId>commons-io</artifactId>
-           <groupId>commons-io</groupId>
-           <version>2.4</version>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.logging</groupId>
-           <artifactId>jboss-logging</artifactId>
-           <version>3.1.3.GA</version>
-        </dependency>
-
-        <dependency>
-           <groupId>javax.transaction</groupId>
-           <artifactId>jta</artifactId>
-           <version>1.1</version>
-        </dependency>
-
-        <dependency>
-           <groupId>org.ogce</groupId>
-           <artifactId>xpp3</artifactId>
-           <version>1.1.6</version>
-        </dependency>
       </dependencies>
    </dependencyManagement>
 
    <dependencies>
-
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
          <scope>test</scope>
       </dependency>
-
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
          <scope>test</scope>
       </dependency>
-       <dependency>
-           <groupId>xml-apis</groupId>
-           <artifactId>xml-apis</artifactId>
-           <version>1.4.01</version>
-           <scope>test</scope>
-       </dependency>
+      <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+        <scope>test</scope>
+      </dependency>
    </dependencies>
 
 </project>
