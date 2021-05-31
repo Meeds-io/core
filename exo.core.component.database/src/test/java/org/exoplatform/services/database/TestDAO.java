@@ -40,44 +40,6 @@ public class TestDAO extends TestCase
       // empty, to doesn't fail during the tests
    }
 
-   /*
-    * GA: This Test failed, uncomment to see!!! public void testDAO() throws
-    * Exception { PortalContainer pcontainer = PortalContainer.getInstance() ;
-    * DatabaseService service = (DatabaseService)
-    * pcontainer.getComponentInstance("XAPoolTxSupportDBConnectionService") ;
-    * PortalContainer manager = PortalContainer.getInstance(); ListenerService
-    * listenerService = (ListenerService)
-    * manager.getComponentInstanceOfType(ListenerService.class) ;
-    * queries(service); testMock(listenerService, service); }
-    */
-   private void testMock(ListenerService listenerService, DatabaseService service) throws Exception
-   {
-      ExoDatasource dataSource = service.getDatasource();
-      DBTableManager dbManager = dataSource.getDBTableManager();
-      assertEquals(dbManager.hasTable(Mock.class), false);
-      dbManager.createTable(Mock.class, true);
-      assertEquals(dbManager.hasTable(Mock.class), true);
-
-      StandardSQLDAO<Mock> dao = new StandardSQLDAO<Mock>(dataSource, new Mock.MockMapper(), Mock.class);
-      Mock mock = new Mock("Benj", 2);
-      dao.save(mock);
-
-      List<Mock> list = new ArrayList<Mock>();
-      list.add(new Mock("Thuannd", 12));
-      list.add(new Mock("Hung", 4));
-      dao.save(list);
-
-      Mock savedMock = dao.load(mock.getDBObjectId());
-      assertEquals(mock.getName(), savedMock.getName());
-
-      // reflection mapper
-      dao = new StandardSQLDAO<Mock>(dataSource, Mock.class);
-      list.clear();
-      list.add(new Mock("Ha", 17));
-      list.add(new Mock("Hoa", 6));
-      dao.save(list);
-   }
-
    private String printQueryResult(DatabaseService service) throws Exception
    {
       Connection conn = service.getConnection();
