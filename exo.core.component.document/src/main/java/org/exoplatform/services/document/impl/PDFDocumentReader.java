@@ -22,12 +22,13 @@ import org.apache.jempbox.xmp.XMPMetadata;
 import org.apache.jempbox.xmp.XMPSchemaBasic;
 import org.apache.jempbox.xmp.XMPSchemaDublinCore;
 import org.apache.jempbox.xmp.XMPSchemaPDF;
-import org.apache.pdfbox.exceptions.InvalidPasswordException;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
-import org.apache.pdfbox.util.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.util.XMLUtil;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.document.DCMetaData;
 import org.exoplatform.services.document.DocumentReadException;
@@ -185,24 +186,12 @@ public class PDFDocumentReader extends BaseDocumentReader
                Properties props = new Properties();
                try
                {
-                  if (pdDocument.isEncrypted())
-                  {
-                     try
-                     {
-                        pdDocument.decrypt("");
-                     }
-                     catch (org.apache.pdfbox.exceptions.CryptographyException e)
-                     {
-                        throw new DocumentReadException(e.getMessage(), e);
-                     }
-                  }
-
+                  
                   PDDocumentCatalog catalog = pdDocument.getDocumentCatalog();
                   PDMetadata meta = catalog.getMetadata();
                   if (meta != null)
                   {
-                     XMPMetadata metadata = meta.exportXMPMetadata();
-
+                     XMPMetadata metadata = new XMPMetadata(XMLUtil.parse(meta.createInputStream()));
                      XMPSchemaDublinCore dc = metadata.getDublinCoreSchema();
                      if (dc != null)
                      {

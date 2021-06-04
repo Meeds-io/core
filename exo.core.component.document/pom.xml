@@ -141,18 +141,6 @@
                <artifactId>pdfbox</artifactId>
             </exclusion>
             <exclusion>
-               <groupId>org.apache.poi</groupId>
-               <artifactId>poi</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.apache.poi</groupId>
-               <artifactId>poi-scratchpad</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.apache.poi</groupId>
-               <artifactId>poi-ooxml</artifactId>
-            </exclusion>
-            <exclusion>
                <groupId>jdom</groupId>
                <artifactId>jdom</artifactId>
             </exclusion>
@@ -268,13 +256,6 @@
                   </goals>
                </execution>
             </executions>
-            <dependencies>
-               <dependency>
-                  <groupId>ant</groupId>
-                  <artifactId>ant-optional</artifactId>
-                  <version>1.5.3-1</version>
-               </dependency>
-            </dependencies>
          </plugin>
       </plugins>
    </build>

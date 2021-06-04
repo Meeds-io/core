@@ -19,7 +19,9 @@
 package org.exoplatform.services.document.impl;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.poi.util.SAXHelper;
+import org.apache.poi.ooxml.POIXMLProperties;
+import org.apache.poi.ooxml.util.SAXHelper;
+import org.apache.xmlbeans.XmlException;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.services.document.DCMetaData;
 import org.exoplatform.services.document.DocumentReadException;
@@ -231,7 +233,6 @@ public class MSXPPTDocumentReader extends BaseDocumentReader
          {
             zis.close();
          }
-
       }
       catch (ParserConfigurationException e)
       {

@@ -32,7 +32,7 @@
    <description>Implementation of XML Processing Service of Exoplatform SAS 'eXo Core' project.</description>
    <properties>
       <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
-      <exo.test.coverage.ratio>0.76</exo.test.coverage.ratio>
+      <exo.test.coverage.ratio>0.25</exo.test.coverage.ratio>
    </properties>
    <dependencies>
       <dependency>
@@ -43,10 +43,6 @@
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.commons.test</artifactId>
          <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>net.sf.jtidy</groupId>
-         <artifactId>jtidy</artifactId>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>
@@ -131,13 +127,6 @@
                   </goals>
                </execution>
             </executions>
-            <dependencies>
-               <dependency>
-                  <groupId>ant</groupId>
-                  <artifactId>ant-optional</artifactId>
-                  <version>1.5.3-1</version>
-               </dependency>
-            </dependencies>
          </plugin>
       </plugins>
    </build>

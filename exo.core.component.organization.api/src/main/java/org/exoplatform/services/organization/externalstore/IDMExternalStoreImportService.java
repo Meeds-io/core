@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang.StringUtils;
+import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.services.organization.impl.UserImpl;
 import org.picocontainer.Startable;
 
 import org.exoplatform.commons.utils.ListAccess;
@@ -37,6 +39,8 @@ public class IDMExternalStoreImportService implements Startable {
   public static final String      IDM_QUEUE_PROCESSING_CRON_EXPRESSION      =
                                                                        "exo.idm.externalStore.queue.processing.cronExpression";
 
+  public static final String      EXTERNAL_STORE_DELETE_MISSING_ENTRIES     = "exo.idm.externalStore.entries.missing.delete";
+
   private ExoContainer            container;
 
   private OrganizationService     organizationService;
@@ -52,6 +56,8 @@ public class IDMExternalStoreImportService implements Startable {
   private String                  scheduledDataImportJobCronExpression      = null;
 
   private String                  scheduledDataDeleteJobCronExpression      = null;
+
+  private boolean                 deleteMissingEntriesFromInternalStore    = true;
 
   private String                  scheduledQueueProcessingJobCronExpression = null;
 
@@ -73,6 +79,9 @@ public class IDMExternalStoreImportService implements Startable {
     if (params != null) {
       if (params.containsKey(EXTERNAL_STORE_IMPORT_CRON_EXPRESSION)) {
         scheduledDataImportJobCronExpression = params.getValueParam(EXTERNAL_STORE_IMPORT_CRON_EXPRESSION).getValue();
+      }
+      if (params.containsKey(EXTERNAL_STORE_DELETE_MISSING_ENTRIES)) {
+        deleteMissingEntriesFromInternalStore = Boolean.parseBoolean(params.getValueParam(EXTERNAL_STORE_IMPORT_CRON_EXPRESSION).getValue());
       }
       if (StringUtils.isBlank(scheduledDataImportJobCronExpression)) {
         LOG.warn("No scheduled job will be added to periodically import IDM data from external store");
@@ -359,7 +368,7 @@ public class IDMExternalStoreImportService implements Startable {
     }
 
     if (deleted) {
-      LOG.info("Delete from internal store entity of type '{}' with id '{}'", entityType.getName(), entityId);
+      LOG.info("Disable/Delete from internal store entity of type '{}' with id '{}'", entityType.getName(), entityId);
     } else {
       LOG.info("Import to internal store entity of type '{}' with id '{}'", entityType.getName(), entityId);
     }
@@ -797,10 +806,15 @@ public class IDMExternalStoreImportService implements Startable {
     if (deleted && internalUser != null) {
       // Do not delete user profile and memberships because it's already
       // deleted by previous statement
-      LOG.trace("Remove from internal store deleted user '{}' from external store", username);
-      organizationService.getUserHandler().removeUser(username, true);
+      if(deleteMissingEntriesFromInternalStore) {
+        LOG.trace("Remove from internal store deleted user '{}' from external store", username);
+        organizationService.getUserHandler().removeUser(username, true);
+      } else {
+        LOG.trace("Disable user '{}' in internal store as he is not found in external store", username);
+        organizationService.getUserHandler().setEnabled(username, false, true);
+      }
 
-      // Triggering event is optional, thus exceptions must be catched
+      // Triggering event is optional, thus exceptions must be caught
       try {
         listenerService.broadcast(IDMExternalStoreService.USER_DELETED_FROM_EXTERNAL_STORE, this, internalUser);
       } catch (Exception e) {
@@ -818,7 +832,15 @@ public class IDMExternalStoreImportService implements Startable {
 
       // This is a mandatory treatment, thus it should not be surrounded by
       // try/catch block
-      organizationService.getUserHandler().createUser(externalUser, true);
+      if (externalUser.isEnabled()) {
+        organizationService.getUserHandler().createUser(externalUser, true);
+      } else {
+        // while creating a user : if it is disabled we need to enabled it , create it then disable it
+        // since when creating a disabled user it throws disabled user exception.
+        ((UserImpl) externalUser).setEnabled(true);
+        organizationService.getUserHandler().createUser(externalUser, true);
+        organizationService.getUserHandler().setEnabled(externalUser.getUserName(),false, true);
+      }
       internalUser = externalUser;
       try {
         // The user information creation listener triggering is optional, thus
@@ -833,8 +855,20 @@ public class IDMExternalStoreImportService implements Startable {
         isModified = updateModified && externalStoreService.isEntityModified(IDMEntityType.USER, username);
         if (isModified) {
           User externalUser = externalStoreService.getEntity(IDMEntityType.USER, username);
+          if(internalUser.isEnabled() != externalUser.isEnabled()) {
+            organizationService.getUserHandler().setEnabled(internalUser.getUserName(), externalUser.isEnabled(), true);
+          }
           mergeExternalToInternalUser(internalUser, externalUser);
-          organizationService.getUserHandler().saveUser(internalUser, true);
+          // if user is disalbed we need to enable it , save it then created
+          // since when saving a disabled user it throws disabled user exception.
+
+          if(!internalUser.isEnabled() ) {
+            ((UserImpl) internalUser).setEnabled(true);
+            organizationService.getUserHandler().saveUser(internalUser, true);
+            organizationService.getUserHandler().setEnabled(internalUser.getUserName(), false, true);
+          }else{
+            organizationService.getUserHandler().saveUser(internalUser, true);
+          }
           try {
             // The user information creation listener triggering is optional,
             // thus this is surrounded by try/catch
@@ -876,6 +910,9 @@ public class IDMExternalStoreImportService implements Startable {
     }
     if (externalUser.getCreatedDate() != null) {
       internalUser.setCreatedDate(externalUser.getCreatedDate());
+    }
+    if( !Objects.equals(externalUser.isEnabled(), internalUser.isEnabled())) {
+      ((UserImpl) internalUser).setEnabled(externalUser.isEnabled());
     }
     internalUser.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
   }
@@ -1013,4 +1050,7 @@ public class IDMExternalStoreImportService implements Startable {
     }
   }
 
+  public void setDeleteMissingEntriesFromInternalStore(boolean deleteMissingEntriesFromInternalStore) {
+    this.deleteMissingEntriesFromInternalStore = deleteMissingEntriesFromInternalStore;
+  }
 }
