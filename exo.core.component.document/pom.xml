@@ -31,7 +31,6 @@
    <name>eXo PLF Core :: Component :: Document Service</name>
    <description>Implementation of Document Service of Exoplatform SAS 'eXo Core' project.</description>
    <properties>
-      <argLine>-Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
       <exo.test.coverage.ratio>0.60</exo.test.coverage.ratio>
    </properties>
    <dependencies>
@@ -213,9 +212,9 @@
       </testResources>
       <plugins>
          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+               <argLine>-Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                <systemProperties>
                   <property>
                      <name>emma.coverage.out.file</name>
