@@ -71,7 +71,7 @@
 
    <component>
       <key>org.exoplatform.services.transaction.TransactionService</key>
-      <type>org.exoplatform.services.transaction.impl.jotm.TransactionServiceJotmImpl</type>
+      <type>org.exoplatform.services.transaction.impl.atomikos.TransactionsEssentialsTransactionService</type>
       <init-params>
          <value-param>
             <name>timeout</name>
