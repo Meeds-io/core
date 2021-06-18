@@ -40,6 +40,10 @@
 
    <properties>
       <org.exoplatform.kernel.version>6.2.x-SNAPSHOT</org.exoplatform.kernel.version>
+      
+      <!-- Sonar properties -->
+      <sonar.organization>meeds-io</sonar.organization>
+      
    </properties>
 
    <scm>
@@ -136,5 +140,34 @@
         <scope>test</scope>
       </dependency>
    </dependencies>
+   <!-- This profile is used to allow github action to build branches. The github action is used for sonar analysis -->
+   <profiles>
+      <profile>
+         <id>project-repositories</id>
+         <activation>
+            <property>
+               <name>!skip-project-repositories</name>
+            </property>
+         </activation>
+         <repositories>
+            <repository>
+               <snapshots>
+                  <enabled>true</enabled>
+               </snapshots>
+               <id>repository.exoplatform.org</id>
+               <url>https://repository.exoplatform.org/public</url>
+            </repository>
+         </repositories>
+         <pluginRepositories>
+            <pluginRepository>
+               <snapshots>
+                  <enabled>true</enabled>
+               </snapshots>
+               <id>repository.exoplatform.org</id>
+               <url>https://repository.exoplatform.org/public</url>
+            </pluginRepository>
+         </pluginRepositories>
+      </profile>
+   </profiles>
 
 </project>
