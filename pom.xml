@@ -39,7 +39,7 @@
    <description>Exoplatform SAS 'eXo Core' project.</description>
 
    <properties>
-      <org.exoplatform.kernel.version>6.2.x-SNAPSHOT</org.exoplatform.kernel.version>
+      <org.exoplatform.kernel.version>6.2.0-20210708</org.exoplatform.kernel.version>
       
       <!-- Sonar properties -->
       <sonar.organization>meeds-io</sonar.organization>
