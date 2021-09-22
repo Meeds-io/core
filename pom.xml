@@ -32,7 +32,7 @@
 
    <groupId>org.exoplatform.core</groupId>
    <artifactId>core-parent</artifactId>
-   <version>6.3.x-SNAPSHOT</version>
+   <version>6.3.0-M03</version>
    <packaging>pom</packaging>
 
    <name>eXo PLF:: Core</name>
@@ -50,7 +50,7 @@
       <connection>scm:git:git://github.com/meeds-io/core.git</connection>
       <developerConnection>scm:git:git@github.com:meeds-io/core.git</developerConnection>
       <url>https://github.com/meeds-io/core</url>
-     <tag>HEAD</tag>
+     <tag>6.3.0-M03</tag>
   </scm>
 
    <modules>
