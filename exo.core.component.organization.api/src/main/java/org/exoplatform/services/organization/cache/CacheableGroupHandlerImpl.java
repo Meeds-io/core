@@ -221,4 +221,16 @@ public class CacheableGroupHandlerImpl implements GroupHandler
       groupCache.put(group.getId(), group);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void moveGroup(Group parentOriginGroup, Group parentTargetGroup,Group groupToMove) throws Exception
+   {
+      //todo remove cache
+      groupHandler.moveGroup(parentOriginGroup, parentTargetGroup,groupToMove);
+   }
+
+
+
+
 }
