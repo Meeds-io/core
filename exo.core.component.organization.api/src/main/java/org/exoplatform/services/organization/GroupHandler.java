@@ -82,6 +82,21 @@ public interface GroupHandler
    void saveGroup(Group group, boolean broadcast) throws Exception;
 
    /**
+    * Use this method to move a group in the group tree
+    * it will only remove the relation between originGroup.parentId and originGroup.id,
+    * and add a relation between targetGroup.parentId and originGroup.id
+    *
+    * @param parentOriginGroup The parent group of the group to move
+    * @param parentTargetGroup The parent group where to move the group
+    * @param parentTargetGroup The group object to move
+    * @throws Exception An exception is thrown if the method cannot access the
+    *           database or any listener fail to handle the event
+    */
+   default void moveGroup(Group parentOriginGroup, Group parentTargetGroup,Group groupToMove) throws Exception {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
     * Use this method to remove a group from the group database. If the group has
     * the children group. The method should not remove the group and throw and
     * exception
