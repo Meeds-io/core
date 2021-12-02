@@ -711,28 +711,28 @@ public class IDMExternalStoreImportService implements Startable {
   }
 
   private Group importGroup(String groupId, boolean deleted, boolean updateModified, boolean updateDeleted) throws Exception {
-    Group group = organizationService.getGroupHandler().findGroupById(groupId);
-    if (deleted && group != null) {
+    Group eXoGroup = organizationService.getGroupHandler().findGroupById(groupId);
+    if (deleted && eXoGroup != null) {
       LOG.trace("Remove from internal store deleted group '{}' from external store", groupId);
-      organizationService.getGroupHandler().removeGroup(group, true);
+      organizationService.getGroupHandler().removeGroup(eXoGroup, true);
 
       // Triggering event is optional, thus exceptions must be catched
       try {
-        listenerService.broadcast(IDMExternalStoreService.GROUP_DELETED_FROM_EXTERNAL_STORE, this, group);
+        listenerService.broadcast(IDMExternalStoreService.GROUP_DELETED_FROM_EXTERNAL_STORE, this, eXoGroup);
       } catch (Exception e) {
         LOG.warn("Error while triggering event on group '" + groupId + "' data import (delete) from external store", e);
       }
-      return group;
+      return eXoGroup;
     }
 
-    boolean isNew = group == null;
-    group = externalStoreService.getEntity(IDMEntityType.GROUP, groupId);
-    if (group == null) {
+    boolean isNew = eXoGroup == null;
+    Group idmGroup = externalStoreService.getEntity(IDMEntityType.GROUP, groupId);
+    if (idmGroup == null) {
       throw new IllegalStateException("Could not find group from external store with id " + groupId);
     }
-    group.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
+    idmGroup.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
 
-    String parentId = group.getParentId();
+    String parentId = idmGroup.getParentId();
     Group parentGroup = null;
     if (StringUtils.isNotBlank(parentId)) {
       parentGroup = organizationService.getGroupHandler().findGroupById(parentId);
@@ -744,23 +744,30 @@ public class IDMExternalStoreImportService implements Startable {
       }
     }
     if (isNew) {
-      organizationService.getGroupHandler().addChild(parentGroup, group, true);
+      organizationService.getGroupHandler().addChild(parentGroup, idmGroup, true);
       // Triggering event is optional, thus exceptions must be catched
       try {
-        listenerService.broadcast(IDMExternalStoreService.GROUP_ADDED_FROM_EXTERNAL_STORE, this, group);
+        listenerService.broadcast(IDMExternalStoreService.GROUP_ADDED_FROM_EXTERNAL_STORE, this, idmGroup);
       } catch (Exception e) {
         LOG.warn("Error while triggering event on group '" + groupId + "' data import (creation) from external store", e);
       }
     } else {
-      organizationService.getGroupHandler().saveGroup(group, true);
+      if (!Objects.equals(eXoGroup.getParentId(),idmGroup.getParentId())) {
+        LOG.info("Group {} moved from {} to {}", eXoGroup.getId(), eXoGroup.getParentId(), idmGroup.getParentId());
+        Group originParentGroup = organizationService.getGroupHandler().findGroupById(eXoGroup.getParentId());
+
+        organizationService.getGroupHandler().moveGroup(originParentGroup,parentGroup,idmGroup);
+      }
+      organizationService.getGroupHandler().saveGroup(idmGroup, true);
+
       // Triggering event is optional, thus exceptions must be catched
       try {
-        listenerService.broadcast(IDMExternalStoreService.GROUP_MODIFIED_FROM_EXTERNAL_STORE, this, group);
+        listenerService.broadcast(IDMExternalStoreService.GROUP_MODIFIED_FROM_EXTERNAL_STORE, this, idmGroup);
       } catch (Exception e) {
         LOG.warn("Error while triggering event on group '" + groupId + "' data import (modification) from external store", e);
       }
     }
-    return group;
+    return idmGroup;
   }
 
   private UserProfile importUserProfile(String username, boolean deleted) throws Exception {
