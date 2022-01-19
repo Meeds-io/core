@@ -18,11 +18,9 @@
  */
 package org.exoplatform.services.database.impl;
 
-import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 
 /**
  * Created by The eXo Platform SAS .
@@ -32,22 +30,10 @@ import org.hibernate.service.ServiceRegistryBuilder;
  *          $ Hibernate's Configuration. One per 'properties-param' entry in
  *          container configuration
  */
-public class HibernateConfigurationImpl extends Configuration
-{
-
-   private static final long serialVersionUID = -6929418313712034365L;
-
-   public HibernateConfigurationImpl() throws HibernateException
-   {
-      super();
-   }
-
-   public SessionFactory buildSessionFactory() throws HibernateException
-   {
-
-      ServiceRegistry servReg = new ServiceRegistryBuilder().applySettings(getProperties()).buildServiceRegistry();
-      SessionFactory sessionFactory = buildSessionFactory(servReg);
-
-      return sessionFactory;
+public class HibernateConfigurationImpl extends Configuration {
+   public SessionFactory buildSessionFactory() {
+     ServiceRegistry servReg = getStandardServiceRegistryBuilder().applySettings(getProperties())
+         .build();
+     return super.buildSessionFactory(servReg);
    }
 }
