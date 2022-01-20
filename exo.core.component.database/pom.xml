@@ -63,7 +63,7 @@
       </dependency>
       <dependency>
          <groupId>javax.resource</groupId>
-         <artifactId>connector-api</artifactId>
+         <artifactId>javax.resource-api</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>

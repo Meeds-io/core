@@ -57,7 +57,6 @@ public class TestDatabaseService extends TestCase
    {
       TransactionService txservice = service.getTransactionService();
       assertTrue(service != null);
-      // TransactionManager tm = txservice.getTransactionManager() ;
       UserTransaction utx = txservice.getUserTransaction();
       Connection conn = service.getConnection();
       Statement s = null;
