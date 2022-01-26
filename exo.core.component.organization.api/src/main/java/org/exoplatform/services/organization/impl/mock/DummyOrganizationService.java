@@ -249,6 +249,12 @@ public class DummyOrganizationService extends BaseOrganizationService
       {
       }
 
+
+      @Override
+      public void createUser(User user, boolean isExternal, boolean broadcast) throws Exception {
+
+      }
+
       public void saveUser(User user, boolean broadcast) throws Exception
       {
       }

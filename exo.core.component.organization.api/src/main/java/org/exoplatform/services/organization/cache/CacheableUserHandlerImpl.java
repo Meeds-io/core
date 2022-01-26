@@ -94,6 +94,14 @@ public class CacheableUserHandlerImpl implements UserHandler
    /**
     * {@inheritDoc}
     */
+   @Override
+   public void createUser(User user, boolean isExternal, boolean broadcast) throws Exception {
+      userHandler.createUser(user, isExternal, broadcast);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public User createUserInstance()
    {
       return userHandler.createUserInstance();

@@ -57,20 +57,33 @@ public class NewUserEventListener extends UserEventListener
       }
    }
 
-   public void postSave(User user, boolean isNew) throws Exception
-   {
-      ExoContainer pcontainer = ExoContainerContext.getCurrentContainer();
-      OrganizationService service =
-         (OrganizationService)pcontainer.getComponentInstanceOfType(OrganizationService.class);
+   public void postSave(User user, boolean isNew) throws Exception {
+      OrganizationService service = getOrganizationService();
       UserProfile up = service.getUserProfileHandler().createUserProfileInstance();
       up.setUserName(user.getUserName());
       service.getUserProfileHandler().saveUserProfile(up, false);
       if (config_ == null)
          return;
-      if (isNew && !config_.isIgnoreUser(user.getUserName()))
-      {
+      if (isNew && !config_.isIgnoreUser(user.getUserName())) {
          createDefaultUserMemberships(user, service);
       }
+   }
+
+   @Override
+   public void postSave(User user, boolean isNew, boolean isExternal) throws Exception {
+      OrganizationService service = getOrganizationService();
+      UserProfile up = service.getUserProfileHandler().createUserProfileInstance(user.getUserName());
+      service.getUserProfileHandler().saveUserProfile(up, false);
+      if (config_ == null)
+         return;
+      if (isNew && !config_.isIgnoreUser(user.getUserName()) && !isExternal) {
+         createDefaultUserMemberships(user, service);
+      }
+   }
+
+   @Override
+   public void preSave(User user, boolean isNew, boolean isExternal) throws Exception {
+      preSave(user, isNew);
    }
 
    public void preDelete(User user) throws Exception
@@ -79,6 +92,12 @@ public class NewUserEventListener extends UserEventListener
 
    public void postDelete(User user) throws Exception
    {
+   }
+
+   private OrganizationService getOrganizationService() {
+      ExoContainer container = ExoContainerContext.getCurrentContainer();
+      OrganizationService service = container.getComponentInstanceOfType(OrganizationService.class);
+      return service;
    }
 
    private void createDefaultUserMemberships(User user, OrganizationService service) throws Exception

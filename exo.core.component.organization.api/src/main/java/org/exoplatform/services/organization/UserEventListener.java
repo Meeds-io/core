@@ -71,6 +71,20 @@ public class UserEventListener extends BaseComponentPlugin
    }
 
    /**
+    * This method is called before the user is persisted to the database.
+    *
+    * @param user The user to be saved
+    * @param isNew if the user is a new record in the database or not
+    * @throws Exception The developer can decide to throw an exception or not. If
+    *           the listener throw an exception, the organization service should
+    *           not save/update the user to the database
+    * @param isExternal if the user is external or internal
+    */
+   public void preSave(User user, boolean isNew, boolean isExternal) throws Exception
+   {
+   }
+
+   /**
     * This method is called after the user has been saved but not committed yet
     * 
     * @param user The user instance has been saved.
@@ -81,6 +95,21 @@ public class UserEventListener extends BaseComponentPlugin
     *           userHandler.createUser(..) or UserHandler.saveUser(..) is called.
     */
    public void postSave(User user, boolean isNew) throws Exception
+   {
+   }
+
+   /**
+    * This method is called after the user has been saved but not committed yet
+    *
+    * @param user The user instance has been saved.
+    * @param isNew if the user is a new record in the database or not
+    * @throws Exception The developer can decide to throw the exception or not.
+    *           If the method throw an exception. The organization service should
+    *           role back the data to the state before the method
+    *           userHandler.createUser(..) or UserHandler.saveUser(..) is called.
+    * @param isExternal if the user is external or internal
+    */
+   public void postSave(User user, boolean isNew, boolean isExternal) throws Exception
    {
    }
 

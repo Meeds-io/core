@@ -71,6 +71,24 @@ public interface UserHandler
    void createUser(User user, boolean broadcast) throws Exception;
 
    /**
+    * This method is used to persist a new user object.
+    *
+    * @param user The user object to save
+    * @param broadcast If the broadcast value is true , then the UserHandler
+    *          should broadcast the event to all the listener that register with
+    *          the organization service. For example, the portal service register
+    *          an user event listener with the organization service. when a new
+    *          account is created, a portal configuration should be created for
+    *          the new user account at the same time. In this case the portal
+    *          user event listener will be called in the createUser method.
+    * @param isExternal if the user is external or internal
+    * @throws Exception The exception can be thrown if the UserHandler
+    *           cannot persist the user object or any listeners fail to handle
+    *           the user event.
+    */
+   void createUser(User user, boolean isExternal, boolean broadcast) throws Exception;
+
+   /**
     * This method is used to update an existing User object
     * 
     * @param user The user object to update
