@@ -20,6 +20,8 @@ package org.exoplatform.services.organization.auth;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.organization.DisabledUserException;
 import org.exoplatform.services.organization.OrganizationService;
@@ -33,6 +35,7 @@ import org.exoplatform.services.security.PasswordCredential;
 import org.exoplatform.services.security.UsernameCredential;
 
 import java.net.URL;
+import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
@@ -86,16 +89,83 @@ public class TestOrganizationAuthenticator extends TestCase
 
    public void testAuthenticator() throws Exception
    {
-      assertNotNull(authenticator);
-      assertTrue(authenticator instanceof OrganizationAuthenticatorImpl);
-      Credential[] cred = new Credential[]{new UsernameCredential("admin"), new PasswordCredential("admin")};
-      String userId = authenticator.validateUser(cred);
-      assertEquals("admin", userId);
-      Identity identity = authenticator.createIdentity(userId);
-      assertTrue(identity.isMemberOf("/platform/administrators", "manager"));
-      assertTrue(identity.getGroups().size() > 0);
-   }
-   
+     assertNotNull(authenticator);
+     assertTrue(authenticator instanceof OrganizationAuthenticatorImpl);
+     Credential[] cred = new Credential[]{new UsernameCredential("admin"), new PasswordCredential("admin")};
+     String userId = authenticator.validateUser(cred);
+     assertEquals("admin", userId);
+     Identity identity = authenticator.createIdentity(userId);
+     assertTrue(identity.isMemberOf("/platform/administrators", "manager"));
+     assertTrue(identity.getGroups().size() > 0);
+  }
+
+   public void testAuthenticatorPlugin() throws Exception
+   {
+     OrganizationAuthenticatorImpl organizationAuthenticatorImpl = (OrganizationAuthenticatorImpl) authenticator;
+     List<AuthenticatorPlugin> originalPlugins = organizationAuthenticatorImpl.getPlugins();
+     try {
+       String username = "0xABCD";
+       String userId = "testuser";
+       String password = "0xDCBA";
+
+       Credential[] cred = new Credential[] { new UsernameCredential(username), new PasswordCredential(password) };
+
+       try {
+         organizationAuthenticatorImpl.validateUser(cred);
+         fail("Must fail with invalid credentials");
+       } catch (LoginException e) {
+         // Expected
+       }
+
+       // Add plugins that invalidate credentials after and before valid one
+       organizationAuthenticatorImpl.addAuthenticatorPlugin(new AuthenticatorPlugin() {
+         @Override
+         public String validateUser(Credential[] credentials) {
+           throw new IllegalStateException("Fake Login Error");
+         }
+       });
+
+       organizationAuthenticatorImpl.addAuthenticatorPlugin(new AuthenticatorPlugin() {
+         @Override
+         public String validateUser(Credential[] credentials) {
+           boolean valid = credentials != null && credentials.length == 2
+               && StringUtils.equals(username, ((UsernameCredential) credentials[0]).getUsername())
+               && StringUtils.equals(password, ((PasswordCredential) credentials[1]).getPassword());
+           return valid ? userId : null;
+         }
+       });
+
+       organizationAuthenticatorImpl.addAuthenticatorPlugin(new AuthenticatorPlugin() {
+         @Override
+         public String validateUser(Credential[] credentials) {
+           return null;
+         }
+       });
+
+       String authenticatedUser = organizationAuthenticatorImpl.validateUser(cred);
+       assertEquals(userId, authenticatedUser);
+
+       Identity identity = organizationAuthenticatorImpl.createIdentity(userId);
+       assertTrue(identity.isMemberOf("/platform/users", "member"));
+       assertFalse(identity.getGroups().isEmpty());
+
+       try {
+         organizationAuthenticatorImpl.validateUser(new Credential[] { new UsernameCredential("badUsername"), new PasswordCredential(password) });
+         fail("Must fail with invalid credentials");
+       } catch (LoginException e) {
+         // Expected
+       }
+
+       try {
+         organizationAuthenticatorImpl.validateUser(new Credential[] { new UsernameCredential(username), new PasswordCredential("badPassword") });
+         fail("Must fail with invalid credentials");
+       } catch (LoginException e) {
+         // Expected
+       }
+     } finally {
+       organizationAuthenticatorImpl.setPlugins(originalPlugins);
+     }
+  }
 
    public void testGetLastExceptionOnValidateUser() throws Exception
    {
