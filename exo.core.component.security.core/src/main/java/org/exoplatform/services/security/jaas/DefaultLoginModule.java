@@ -116,9 +116,9 @@ public class DefaultLoginModule extends AbstractLoginModule
             Credential[] credentials =
                new Credential[]{new UsernameCredential(username), new PasswordCredential(password)};
 
-            String userId = authenticator.validateUser(credentials);
-            identity = authenticator.createIdentity(userId);
-            sharedState.put("javax.security.auth.login.name", userId);
+            username = authenticator.validateUser(credentials);
+            identity = authenticator.createIdentity(username);
+            sharedState.put("javax.security.auth.login.name", username);
 
             subject.getPrivateCredentials().add(password);
             subject.getPublicCredentials().add(new UsernameCredential(username));

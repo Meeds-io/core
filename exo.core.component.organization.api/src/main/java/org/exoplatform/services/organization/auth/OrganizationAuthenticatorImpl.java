@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.organization.auth;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.container.component.ComponentRequestLifecycle;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.services.listener.ListenerService;
@@ -39,9 +41,7 @@ import org.exoplatform.services.security.PasswordEncrypter;
 import org.exoplatform.services.security.RolesExtractor;
 import org.exoplatform.services.security.UsernameCredential;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.security.auth.login.LoginException;
 
@@ -72,6 +72,8 @@ public class OrganizationAuthenticatorImpl implements Authenticator
    private final RolesExtractor rolesExtractor;
 
    private final ListenerService listenerService;
+
+   private List<AuthenticatorPlugin> plugins = new ArrayList<>();
 
    public OrganizationAuthenticatorImpl(OrganizationService orgService, RolesExtractor rolesExtractor,
       PasswordEncrypter encrypter, ListenerService listenerService)
@@ -154,42 +156,56 @@ public class OrganizationAuthenticatorImpl implements Authenticator
             passwordContext = ((PasswordCredential)cred).getPasswordContext();
          }
       }
-      if (username == null || password == null)
-         throw new LoginException("Username or Password is not defined");
+      boolean success = false;
+      if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+        if (this.encrypter != null)
+           password = new String(encrypter.encrypt(password.getBytes()));
+  
+        begin(orgService);
+        try
+        {
+           UserHandler userHandler = orgService.getUserHandler();
+           if (passwordContext != null && userHandler instanceof ExtendedUserHandler)
+           {
+              PasswordEncrypter pe = new DigestPasswordEncrypter(username, passwordContext);
+              success = ((ExtendedUserHandler)userHandler).authenticate(username, password, pe);
+           }
+           else
+           {
+              success = userHandler.authenticate(username, password);
+           }
+           // No exception occurred
+           lastExceptionOnValidateUser.remove();
+        }
+        catch (DisabledUserException e)
+        {
+           lastExceptionOnValidateUser.set(e);
+           throw new LoginException("The user account " + username.replace("\n", " ").replace("\r", " ") + " is disabled");
+        }
+        catch (Exception e)
+        {
+           lastExceptionOnValidateUser.set(e);
+           throw e;
+        }
+        finally
+        {
+           end(orgService);
+        }
+      }
 
-      if (this.encrypter != null)
-         password = new String(encrypter.encrypt(password.getBytes()));
-
-      begin(orgService);
-      boolean success;
-      try
-      {
-         UserHandler userHandler = orgService.getUserHandler();
-         if (passwordContext != null && userHandler instanceof ExtendedUserHandler)
-         {
-            PasswordEncrypter pe = new DigestPasswordEncrypter(username, passwordContext);
-            success = ((ExtendedUserHandler)userHandler).authenticate(username, password, pe);
-         }
-         else
-         {
-            success = userHandler.authenticate(username, password);
-         }
-         // No exception occurred
-         lastExceptionOnValidateUser.remove();
-      }
-      catch (DisabledUserException e)
-      {
-         lastExceptionOnValidateUser.set(e);
-         throw new LoginException("The user account " + username.replace("\n", " ").replace("\r", " ") + " is disabled");
-      }
-      catch (Exception e)
-      {
-         lastExceptionOnValidateUser.set(e);
-         throw e;
-      }
-      finally
-      {
-         end(orgService);
+      if (!success) {
+        for (AuthenticatorPlugin plugin : getPlugins()) {
+          try {
+            String validatedUserName = plugin.validateUser(credentials);
+            if (StringUtils.isNotBlank(validatedUserName)) {
+              success = true;
+              username = validatedUserName;
+              break;
+            }
+          } catch (Exception e) {
+            LOG.debug("Error while authenticating user using plugin {}", plugin.getClass());
+          }
+        }
       }
 
       if (!success)
@@ -198,6 +214,18 @@ public class OrganizationAuthenticatorImpl implements Authenticator
       listenerService.broadcast(OrganizationService.USER_AUTHENTICATED_EVENT, orgService, username);
 
       return username;
+   }
+
+   public void addAuthenticatorPlugin(AuthenticatorPlugin plugin) {
+      this.plugins.add(plugin);
+   }
+
+   public List<AuthenticatorPlugin> getPlugins() {
+      return plugins;
+   }
+
+   public void setPlugins(List<AuthenticatorPlugin> plugins) {
+     this.plugins = plugins;
    }
 
    public void begin(OrganizationService orgService) throws Exception
