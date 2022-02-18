@@ -157,7 +157,7 @@ public class OrganizationAuthenticatorImpl implements Authenticator
          }
       }
       boolean success = false;
-      if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+      if (username != null && password != null) {
         if (this.encrypter != null)
            password = new String(encrypter.encrypt(password.getBytes()));
   
