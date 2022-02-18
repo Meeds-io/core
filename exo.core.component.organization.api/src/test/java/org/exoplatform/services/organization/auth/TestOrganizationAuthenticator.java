@@ -27,12 +27,7 @@ import org.exoplatform.services.organization.DisabledUserException;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
-import org.exoplatform.services.security.Authenticator;
-import org.exoplatform.services.security.ConversationRegistry;
-import org.exoplatform.services.security.Credential;
-import org.exoplatform.services.security.Identity;
-import org.exoplatform.services.security.PasswordCredential;
-import org.exoplatform.services.security.UsernameCredential;
+import org.exoplatform.services.security.*;
 
 import java.net.URL;
 import java.util.List;
@@ -98,6 +93,15 @@ public class TestOrganizationAuthenticator extends TestCase
      assertTrue(identity.isMemberOf("/platform/administrators", "manager"));
      assertTrue(identity.getGroups().size() > 0);
   }
+
+   public void testAuthenticateWithEmptyPassword() throws Exception
+   {
+     assertNotNull(authenticator);
+     assertTrue(authenticator instanceof OrganizationAuthenticatorImpl);
+     Credential[] cred = new Credential[]{new UsernameCredential(IdentityConstants.ANONIM), new PasswordCredential("")};
+     String userId = authenticator.validateUser(cred);
+     assertEquals(IdentityConstants.ANONIM, userId);
+   }
 
    public void testAuthenticatorPlugin() throws Exception
    {
