@@ -135,21 +135,13 @@ public final class ConversationRegistry
     */
    public void register(StateKey key, ConversationState state)
    {
-      // supposed that "old" stored value (if any) is no more useful in registry
-      // so we "push" it
-      // for example - we have to do "login" register with username as a key
-      // but it is possible to have more than one state (session) with the same
-      // UID so old one will be pushed possible drawback of this case if
-      // another "same" login occurs between
-      // login and possible use - first state will be just missed
-      states.put(key, state);
-      try
-      {
-         listenerService.broadcast("exo.core.security.ConversationRegistry.register", this, state);
-      }
-      catch (Exception e)
-      {
-         LOG.error("Broadcast message filed ", e);
+      if(states.get(key) == null) {
+         states.put(key, state);
+         try {
+            listenerService.broadcast("exo.core.security.ConversationRegistry.register", this, state);
+         } catch (Exception e) {
+            LOG.error("Broadcast message filed ", e);
+         }
       }
    }
 
