@@ -119,6 +119,8 @@ public class TestSessionRegistry extends TestCase
                ConversationState cs = (ConversationState)event.getData();
                assertSame(s, cs);
                cs.setAttribute("payload", payload);
+               int numberOfCalls = cs.getAttribute("calls") != null ? (int) cs.getAttribute("calls") : 0;
+               cs.setAttribute("calls", numberOfCalls + 1);
             }
             catch (AssertionFailedError error)
             {
@@ -171,6 +173,12 @@ public class TestSessionRegistry extends TestCase
       assertNotNull(registry.getState(key));
       assertEquals(id, registry.getState(key).getIdentity());
       assertSame(payload, s.getAttribute("payload"));
+
+      StateKey key1 = new SimpleStateKey("key1");
+      //
+      registry.register(key1, s);
+
+      assertEquals(1, s.getAttribute("calls"));
 
       //
       registry.unregister(key);
