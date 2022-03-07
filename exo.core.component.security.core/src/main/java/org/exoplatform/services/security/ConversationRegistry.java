@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.security;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.container.spi.DefinitionByType;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -135,8 +136,13 @@ public final class ConversationRegistry
     */
    public void register(StateKey key, ConversationState state)
    {
-      if(states.get(key) == null) {
-         states.put(key, state);
+      String userId = state.getIdentity().getUserId();
+      // We will broadcast login event if :
+      // 1- session is not already registered -> session ID is not in the states map keys
+      // 2- user is not already logged-in (there is no registered state with the same userID)
+      boolean broadcast = states.get(key) == null && StringUtils.isNotBlank(userId) && getStateKeys(userId).isEmpty();
+      states.put(key, state);
+      if (broadcast) {
          try {
             listenerService.broadcast("exo.core.security.ConversationRegistry.register", this, state);
          } catch (Exception e) {
