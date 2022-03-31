@@ -67,7 +67,7 @@ public interface UserProfile extends Serializable
     * The predefine attributes of the exoplatform. Those keys are currently used
     * in the exo forum
     */
-   final static public String[] OTHER_KEYS = {"user.other-info.avatar.url", "user.other-info.signature",};
+   final static public String[] OTHER_KEYS = {"user.other-info.avatar.url", "user.other-info.signature","user.other-info.external"};
 
    /**
     * @return the username, the identifier of an user profile instance
