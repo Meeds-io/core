@@ -1,31 +1,28 @@
 /*
- * Copyright (C) 2013 eXo Platform SAS.
+ * This file is part of the Meeds project (https://meeds.io/).
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright (C) 2022 Meeds Association contact@meeds.io
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.exoplatform.services.organization;
 
 import java.time.Instant;
 
 /**
- * This exception is used when we try to interact illegally with a disabled user account.
- * 
- * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
- * @version $Id$
- *
+ * This exception is raised when trying to interact with a temporarily locked
+ * account.
  */
 public class AccountTemporaryLockedException extends Exception
 {
@@ -36,17 +33,20 @@ public class AccountTemporaryLockedException extends Exception
    private static final long serialVersionUID = 1751536769113302305L;
 
    /**
-    * The user name of the disabled account with which we try to interact illegally
+    * The user name of the locked account
     */
    private final String username;
 
    /**
-    * The user name of the disabled account with which we try to interact illegally
+    * Moment when the account will be unlocked
     */
    private final Instant unlockTime;
+
    /**
-    * Constructs the exception with only the user name
+    * Constructs the exception with the user name and the account unlock time
+    * 
     * @param username the user name of the disabled account
+    * @param unlockTime the moment when the account will be unlocked
     */
    public AccountTemporaryLockedException(String username, Instant unlockTime)
    {
@@ -55,23 +55,7 @@ public class AccountTemporaryLockedException extends Exception
    }
 
    /**
-    * This constructor is used when we could not check if the user account
-    * is disabled or not due to another exception. By default we consider
-    * the user account as disabled so we raise a {@link AccountTemporaryLockedException}
-    * that we created with this constructor.
-    * @param username the user name of the potentially disabled account
-    * @param cause The exception that prevents to check whether the user
-    *              account is disabled or not.
-    */
-   public AccountTemporaryLockedException(String username, Instant unlockTime, Throwable cause)
-   {
-      super(cause);
-      this.username = username;
-      this.unlockTime = unlockTime;
-   }
-
-   /**
-    * @return the username of the disabled account
+    * @return the user name of the locked account account
     */
    public String getUsername()
    {

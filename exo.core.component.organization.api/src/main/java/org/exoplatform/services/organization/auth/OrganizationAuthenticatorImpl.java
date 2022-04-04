@@ -186,7 +186,8 @@ public class OrganizationAuthenticatorImpl implements Authenticator
         catch (AccountTemporaryLockedException e)
         {
            lastExceptionOnValidateUser.set(e);
-           throw new LoginException("The user account " + username.replace("\n", " ").replace("\r", " ") + " is temporary locked "
+           throw new LoginException("The user account " + username.replace("\n", " ").replace("\r", " ")
+               + " is temporarily locked "
                                       + "until "+e.getUnlockTime());
         }
         catch (Exception e)
