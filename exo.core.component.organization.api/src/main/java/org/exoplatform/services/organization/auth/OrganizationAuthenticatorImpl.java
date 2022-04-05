@@ -25,6 +25,7 @@ import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.organization.AccountTemporaryLockedException;
 import org.exoplatform.services.organization.DisabledUserException;
 import org.exoplatform.services.organization.ExtendedUserHandler;
 import org.exoplatform.services.organization.Membership;
@@ -181,6 +182,13 @@ public class OrganizationAuthenticatorImpl implements Authenticator
         {
            lastExceptionOnValidateUser.set(e);
            throw new LoginException("The user account " + username.replace("\n", " ").replace("\r", " ") + " is disabled");
+        }
+        catch (AccountTemporaryLockedException e)
+        {
+           lastExceptionOnValidateUser.set(e);
+           throw new LoginException("The user account " + username.replace("\n", " ").replace("\r", " ")
+               + " is temporarily locked "
+                                      + "until "+e.getUnlockTime());
         }
         catch (Exception e)
         {
