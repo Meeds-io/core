@@ -27,7 +27,6 @@ import org.exoplatform.services.organization.DisabledUserException;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
 import org.exoplatform.services.organization.UserStatus;
-import org.exoplatform.services.organization.auth.TestOrganizationAuthenticator;
 import org.exoplatform.services.security.ConversationRegistry;
 
 import java.net.URL;
@@ -54,7 +53,7 @@ public class TestUserHandler extends TestCase
       if (registry == null)
       {
          URL containerConfURL =
-            TestOrganizationAuthenticator.class.getResource("/conf/standalone/test-configuration.xml");
+                              TestUserHandler.class.getResource("/conf/standalone/test-configuration.xml");
          assertNotNull(containerConfURL);
 
          String containerConf = containerConfURL.toString();
