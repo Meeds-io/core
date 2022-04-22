@@ -19,14 +19,9 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
-
-   <component>
-      <key>org.exoplatform.services.security.Authenticator</key>
-      <type>org.exoplatform.services.organization.auth.OrganizationAuthenticatorImpl</type>
-   </component>
-
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+               xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
    <component>
       <key>org.exoplatform.services.security.RolesExtractor</key>
       <type>org.exoplatform.services.security.impl.DefaultRolesExtractorImpl</type>
