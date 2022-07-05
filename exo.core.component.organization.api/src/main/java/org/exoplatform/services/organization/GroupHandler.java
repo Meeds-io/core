@@ -20,6 +20,7 @@ package org.exoplatform.services.organization;
 
 import org.exoplatform.commons.utils.ListAccess;
 
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -187,6 +188,20 @@ public interface GroupHandler
     *           database.
     */
    Collection<Group> findGroupsOfUser(String user) throws Exception;
+
+   /**
+    * use this method to look all the group that the user has at least one
+    * membership which name matches the given keyword..
+    *
+    * @param user The username of the user
+    * @param keyword The name keyword
+    * @param groupType The group type
+    * @return A collection of the found group. The return collection cannot be
+    *         null, but it can be empty if no group is found.
+    * @throws Exception An exception is thrown if the method cannot access the
+    *           database.
+    */
+   Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, String groupType) throws IOException;
 
    /**
     * use this method to look all the group which name matches the given keyword.

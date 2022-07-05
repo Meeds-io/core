@@ -23,7 +23,9 @@ import org.exoplatform.services.organization.GroupEventListener;
 import org.exoplatform.services.organization.GroupHandler;
 import org.exoplatform.services.organization.Membership;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -165,6 +167,11 @@ public class CacheableGroupHandlerImpl implements GroupHandler
          groupCache.put(group.getId(), groups);
 
       return groups;
+   }
+
+   @Override
+   public Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, String groupType) throws IOException {
+      return Collections.emptyList();
    }
 
    /**
