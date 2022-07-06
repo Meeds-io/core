@@ -26,24 +26,23 @@
    <parent>
       <artifactId>maven-parent-pom</artifactId>
       <groupId>org.exoplatform</groupId>
-      <version>26</version>
+      <version>27-meed-M02</version>
       <relativePath />
    </parent>
 
    <groupId>org.exoplatform.core</groupId>
    <artifactId>core-parent</artifactId>
-   <version>6.6.x-SNAPSHOT</version>
+   <version>6.6.x-meed-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo PLF:: Core</name>
    <description>Exoplatform SAS 'eXo Core' project.</description>
 
    <properties>
-      <org.exoplatform.kernel.version>6.6.x-SNAPSHOT</org.exoplatform.kernel.version>
-      
+      <org.exoplatform.kernel.version>6.6.x-meed-SNAPSHOT</org.exoplatform.kernel.version>
+
       <!-- Sonar properties -->
       <sonar.organization>meeds-io</sonar.organization>
-      
    </properties>
 
    <scm>
