@@ -47,10 +47,8 @@ import org.exoplatform.services.organization.impl.UserImpl;
 import org.exoplatform.services.organization.impl.UserProfileImpl;
 import org.exoplatform.services.security.PasswordEncrypter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author benjaminmestrallet
@@ -529,6 +527,11 @@ public class DummyOrganizationService extends BaseOrganizationService
             groups.add(new DummyGroup(GROUPID_PLATFORM, GROUPID_ADMINISTRATORS, GROUPNAME_ADMINISTRATORS));
          }
          return groups;
+      }
+
+      @Override
+      public Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, String groupType) throws IOException {
+         return Collections.emptyList();
       }
 
       @Override
