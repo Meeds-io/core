@@ -193,13 +193,13 @@ public interface GroupHandler
     * use this method to look all the group that the user has at least one
     * membership which name matches the given keyword..
     *
-    * @param user      The username of the user
-    * @param keyword   The name keyword
+    * @param user The username of the user
+    * @param keyword The name keyword
     * @param groupType The group type
     * @return A collection of the found group. The return collection cannot be
-    * null, but it can be empty if no group is found.
+    *         null, but it can be empty if no group is found.
     * @throws Exception An exception is thrown if the method cannot access the
-    *                   database.
+    *           database.
     */
    default Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, String groupType) throws IOException {
       throw new UnsupportedOperationException();
