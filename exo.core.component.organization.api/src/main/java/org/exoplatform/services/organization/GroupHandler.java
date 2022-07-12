@@ -201,7 +201,9 @@ public interface GroupHandler
     * @throws Exception An exception is thrown if the method cannot access the
     *           database.
     */
-   Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, String groupType) throws IOException;
+   default Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, String groupType) throws IOException {
+      throw new UnsupportedOperationException();
+   }
 
    /**
     * use this method to look all the group which name matches the given keyword.
