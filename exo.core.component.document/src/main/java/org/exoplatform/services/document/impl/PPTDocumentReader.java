@@ -18,7 +18,9 @@
  */
 package org.exoplatform.services.document.impl;
 
-import org.apache.poi.hslf.extractor.PowerPointExtractor;
+import org.apache.poi.hslf.usermodel.HSLFSlideShowFactory;
+import org.apache.poi.sl.extractor.SlideShowExtractor;
+import org.apache.poi.sl.usermodel.SlideShowFactory;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -69,17 +71,18 @@ public class PPTDocumentReader extends BaseDocumentReader
          {
             return "";
          }
-         
-         PowerPointExtractor ppe;
+
+         SlideShowExtractor ppe;
          try
          {
-            ppe = new PowerPointExtractor(is);
+           SlideShowFactory.addProvider(new HSLFSlideShowFactory());
+           ppe = new SlideShowExtractor(SlideShowFactory.create(is));
          }
          catch (IOException e)
          {
             throw new DocumentReadException("Can't open presentation.", e);
          }
-         return ppe.getText(true, true);
+         return ppe.getText();
       }
       finally
       {

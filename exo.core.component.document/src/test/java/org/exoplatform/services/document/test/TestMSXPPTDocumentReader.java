@@ -22,6 +22,8 @@ import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.impl.DocumentReaderServiceImpl;
 import org.exoplatform.services.document.impl.MSXPPTDocumentReader;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -36,6 +38,8 @@ import java.io.InputStream;
 public class TestMSXPPTDocumentReader extends BaseStandaloneTest
 {
    DocumentReaderServiceImpl service;
+
+   private static final Log LOG = ExoLogger.getLogger(TestMSXPPTDocumentReader.class);
 
    @Override
    public void setUp() throws Exception
@@ -80,14 +84,11 @@ public class TestMSXPPTDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-         String text =
-            service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
+        service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
                .getContentAsText(is);
-         String etalon =
-            "TEST POWERPOINT " + "Manchester United " + "AC Milan " + "SLIDE 2 " + "Eric Cantona " + "Kaka "
-               + "Ronaldo " + "The natural scients universitys ";
-
-         assertEquals("Wrong string returned", etalon, text);
+         fail("XXE are not allowed and must generate an error");
+       } catch (DocumentReadException e) {
+         LOG.info("Document was not read due to XXE prevention");
       }
       finally
       {
@@ -114,14 +115,11 @@ public class TestMSXPPTDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-         String text =
-            service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
+        service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
                .getContentAsText(is);
-         String etalon =
-            "TEST POWERPOINT " + "Manchester United " + "AC Milan " + "SLIDE 2 " + "Eric Cantona " + "Kaka "
-               + "Ronaldo " + "The natural scients universitys ";
-
-         assertEquals("Wrong string returned", etalon, text);
+         fail("XXE are not allowed and must generate an error");
+       } catch (DocumentReadException e) {
+         LOG.info("Document was not read due to XXE prevention");
       }
       finally
       {
