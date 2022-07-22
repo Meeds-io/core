@@ -20,12 +20,10 @@ package org.exoplatform.services.document.impl;
 
 import org.apache.poi.ooxml.POIXMLProperties;
 import org.apache.poi.ooxml.POIXMLProperties.CoreProperties;
-import org.apache.poi.hpsf.MarkUnsupportedException;
 import org.apache.poi.hpsf.NoPropertySetStreamException;
 import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.PropertySetFactory;
 import org.apache.poi.hpsf.SummaryInformation;
-import org.apache.poi.openxml4j.util.Nullable;
 import org.apache.poi.poifs.eventfilesystem.POIFSReader;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
@@ -147,10 +145,6 @@ public class POIPropertiesReader
                }
             }
             catch (NoPropertySetStreamException e)
-            {
-               throw new POIRuntimeException(new DocumentReadException(e.getMessage(), e));
-            }
-            catch (MarkUnsupportedException e)
             {
                throw new POIRuntimeException(new DocumentReadException(e.getMessage(), e));
             }

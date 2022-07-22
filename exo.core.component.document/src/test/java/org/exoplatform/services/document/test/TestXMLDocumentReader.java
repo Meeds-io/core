@@ -18,8 +18,11 @@
  */
 package org.exoplatform.services.document.test;
 
+import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.impl.DocumentReaderServiceImpl;
 import org.exoplatform.services.document.impl.XMLDocumentReader;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -34,6 +37,8 @@ import java.io.InputStream;
 public class TestXMLDocumentReader extends BaseStandaloneTest
 {
    DocumentReaderServiceImpl service;
+
+   private static final Log LOG = ExoLogger.getLogger(TestXMLDocumentReader.class);
 
    public void setUp() throws Exception
    {
@@ -72,9 +77,10 @@ public class TestXMLDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-         String text = service.getDocumentReader("text/xml").getContentAsText(is);
-         String expected = "John\n" + "  Alice\n" + "  Reminder\n" + "  Don't forget it this weekend!";
-         assertEquals("Wrong string returned", expected, text.trim());
+        service.getDocumentReader("text/xml").getContentAsText(is);
+        fail("An exception is expected");
+      } catch (DocumentReadException e) {
+        LOG.info("Document was not read due to XXE prevention");
       }
       finally
       {
@@ -101,9 +107,10 @@ public class TestXMLDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-         String text = service.getDocumentReader("text/xml").getContentAsText(is);
-         String expected = "John\n" + "  Alice\n" + "  Reminder\n" + "  Don't forget it this weekend!";
-         assertEquals("Wrong string returned", expected, text.trim());
+        service.getDocumentReader("text/xml").getContentAsText(is);
+        fail("An exception is expected");
+      } catch (DocumentReadException e) {
+        LOG.info("Document was not read due to XXE prevention");
       }
       finally
       {
@@ -128,8 +135,10 @@ public class TestXMLDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-         String text = service.getDocumentReader("text/xml").getContentAsText(is);
-         assertTrue(text.isEmpty());
+        service.getDocumentReader("text/xml").getContentAsText(is);
+        fail("An exception is expected");
+      } catch (DocumentReadException e) {
+        LOG.info("Document was not read due to XXE prevention");
       }
       finally
       {

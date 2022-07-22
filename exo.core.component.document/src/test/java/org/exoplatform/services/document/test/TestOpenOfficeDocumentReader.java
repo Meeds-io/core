@@ -21,6 +21,8 @@ package org.exoplatform.services.document.test;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.impl.DocumentReaderServiceImpl;
 import org.exoplatform.services.document.impl.OpenOfficeDocumentReader;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -35,6 +37,8 @@ import java.io.InputStream;
 public class TestOpenOfficeDocumentReader extends BaseStandaloneTest
 {
    DocumentReaderServiceImpl service;
+
+   private static final Log LOG = ExoLogger.getLogger(TestOpenOfficeDocumentReader.class);
 
    @Override
    public void setUp() throws Exception
@@ -77,11 +81,11 @@ public class TestOpenOfficeDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-         String text = service.getDocumentReader("application/vnd.oasis.opendocument.text").getContentAsText(is);
+        service.getDocumentReader("application/vnd.oasis.opendocument.text").getContentAsText(is);
 
-         String expected = "This is a test Open Office document `1234567890-= !@#$%^&*()_+~|:?><|\\,./[]{}";
-
-         assertEquals("Wrong string returned", normalizeWhitespaces(expected), normalizeWhitespaces(text));
+         fail("XXE are not allowed and must generate an error");
+       } catch (DocumentReadException e) {
+         LOG.info("Document was not read due to XXE prevention");
       }
       finally
       {
@@ -109,11 +113,11 @@ public class TestOpenOfficeDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-         String text = service.getDocumentReader("application/vnd.oasis.opendocument.text").getContentAsText(is);
+        service.getDocumentReader("application/vnd.oasis.opendocument.text").getContentAsText(is);
 
-         String expected = "This is a test Open Office document `1234567890-= !@#$%^&*()_+~|:?><|\\,./[]{}";
-
-         assertEquals("Wrong string returned", normalizeWhitespaces(expected), normalizeWhitespaces(text));
+         fail("XXE are not allowed and must generate an error");
+       } catch (DocumentReadException e) {
+         LOG.info("Document was not read due to XXE prevention");
       }
       finally
       {
