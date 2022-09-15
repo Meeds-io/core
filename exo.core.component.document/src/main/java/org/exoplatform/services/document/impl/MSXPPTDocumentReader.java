@@ -19,6 +19,9 @@
 package org.exoplatform.services.document.impl;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.poi.ooxml.POIXMLProperties;
+import org.apache.poi.ooxml.util.SAXHelper;
+import org.apache.xmlbeans.XmlException;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.services.document.DCMetaData;
 import org.exoplatform.services.document.DocumentReadException;
@@ -40,8 +43,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 /**
  * Created by The eXo Platform SAS A parser of Microsoft PowerPoint 2007 files (pptx).
@@ -111,10 +112,7 @@ public class MSXPPTDocumentReader extends BaseDocumentReader
             if (ze == null)
                return "";
 
-             SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-             parserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-             SAXParser parser = parserFactory.newSAXParser();
-             XMLReader xmlReader = parser.getXMLReader();
+            XMLReader xmlReader = SAXHelper.newXMLReader();
             xmlReader.setFeature("http://xml.org/sax/features/validation", false);
             xmlReader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             Map<Integer, String> slides = new TreeMap<Integer, String>();
@@ -222,11 +220,7 @@ public class MSXPPTDocumentReader extends BaseDocumentReader
                return new Properties();
 
             MSPPTXMetaHandler metaHandler = new MSPPTXMetaHandler();
-
-            SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-            parserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            SAXParser parser = parserFactory.newSAXParser();
-            XMLReader xmlReader = parser.getXMLReader();
+            XMLReader xmlReader = SAXHelper.newXMLReader();
 
             xmlReader.setFeature("http://xml.org/sax/features/validation", false);
             xmlReader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);

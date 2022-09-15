@@ -170,11 +170,12 @@ public class TestPropertiesExtracting extends BaseStandaloneTest
          Properties props = service.getDocumentReader("application/powerpoint").getProperties(is);
          Properties etalon = new Properties();
          etalon.put(DCMetaData.TITLE, "test-Title");
-         etalon.put(DCMetaData.DATE, new Date(1662112998853L));
+         etalon.put(DCMetaData.DATE, new Date(1283247255041L));
          etalon.put(DCMetaData.SUBJECT, "test-Subject");
          etalon.put(DCMetaData.CREATOR, "Max Yakimenko");
+         etalon.put(DCMetaData.CONTRIBUTOR, "Max Yakimenko");
          etalon.put(DCMetaData.DESCRIPTION, "test-Comments");
-         evalProps(etalon, props, false);
+         evalProps(etalon, props, true);
       } catch (Exception e) {
         LOG.error("Error reading document properties", e);
         fail();
@@ -318,11 +319,22 @@ public class TestPropertiesExtracting extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-        service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
+         Properties props =
+            service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
                .getProperties(is);
-        fail("XXE are not allowed and must generate an error");
-      } catch (DocumentReadException e) {
-        LOG.info("Document was not read due to XXE prevention");
+         Properties etalon = new Properties();
+
+         etalon.put(DCMetaData.TITLE, "test-Title");
+         etalon.put(DCMetaData.DATE, "2010-08-31T07:59:37Z");
+         etalon.put(DCMetaData.SUBJECT, "test-Subject");
+         etalon.put(DCMetaData.CREATOR, "Max Yakimenko");
+         etalon.put(DCMetaData.CONTRIBUTOR, "Max Yakimenko");
+         etalon.put(DCMetaData.DESCRIPTION, "test-Comments");
+
+         evalProps(etalon, props, true);
+      } catch (Exception e) {
+        LOG.error("Error reading document properties", e);
+        fail();
       }
       finally
       {
@@ -346,11 +358,14 @@ public class TestPropertiesExtracting extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-        service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
+         Properties props =
+            service.getDocumentReader("application/vnd.openxmlformats-officedocument.presentationml.presentation")
                .getProperties(is);
-        fail("XXE are not allowed and must generate an error");
-      } catch (DocumentReadException e) {
-        LOG.info("Document was not read due to XXE prevention");
+         assertTrue(props.isEmpty());
+      }
+      catch (DocumentReadException e)
+      {
+         // Expected
       }
       finally
       {
@@ -467,10 +482,20 @@ public class TestPropertiesExtracting extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-        service.getDocumentReader("application/vnd.oasis.opendocument.text").getProperties(is);
-        fail("XXE are not allowed and must generate an error");
-      } catch (DocumentReadException e) {
-        LOG.info("Document was not read due to XXE prevention");
+         Properties props = service.getDocumentReader("application/vnd.oasis.opendocument.text").getProperties(is);
+         Properties etalon = new Properties();
+
+         etalon.put(DCMetaData.TITLE, "test-Title");
+         etalon.put(DCMetaData.LANGUAGE, "ru-RU");
+         etalon.put(DCMetaData.DATE, "2010-09-03T14:37:59.10");
+         etalon.put(DCMetaData.SUBJECT, "test-Subject");
+         etalon.put(DCMetaData.CREATOR, "Sergiy Karpenko");
+         etalon.put(DCMetaData.DESCRIPTION, "test-Comments");
+
+         evalProps(etalon, props, true);
+      } catch (Exception e) {
+        LOG.error("Error reading document properties", e);
+        fail();
       }
       finally
       {
@@ -498,10 +523,20 @@ public class TestPropertiesExtracting extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-        service.getDocumentReader("application/vnd.oasis.opendocument.text").getProperties(is);
-        fail("XXE are not allowed and must generate an error");
-      } catch (DocumentReadException e) {
-        LOG.info("Document was not read due to XXE prevention");
+         Properties props = service.getDocumentReader("application/vnd.oasis.opendocument.text").getProperties(is);
+         Properties etalon = new Properties();
+
+         etalon.put(DCMetaData.TITLE, "test-Title");
+         etalon.put(DCMetaData.LANGUAGE, "ru-RU");
+         etalon.put(DCMetaData.DATE, "2010-09-03T14:37:59.10");
+         etalon.put(DCMetaData.SUBJECT, "test-Subject");
+         etalon.put(DCMetaData.CREATOR, "Sergiy Karpenko");
+         etalon.put(DCMetaData.DESCRIPTION, "test-Comments");
+
+         evalProps(etalon, props, true);
+      } catch (Exception e) {
+        LOG.error("Error reading document properties", e);
+        fail();
       }
       finally
       {
@@ -526,9 +561,11 @@ public class TestPropertiesExtracting extends BaseStandaloneTest
       try
       {
          service.getDocumentReader("application/vnd.oasis.opendocument.text").getProperties(is);
-         fail("XXE are not allowed and must generate an error");
-       } catch (DocumentReadException e) {
-         LOG.info("Document was not read due to XXE prevention");
+         fail("An error is expected");
+      }
+      catch (DocumentReadException e)
+      {
+         // Expected
       }
       finally
       {

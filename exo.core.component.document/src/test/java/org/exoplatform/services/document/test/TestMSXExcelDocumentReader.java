@@ -21,9 +21,6 @@ package org.exoplatform.services.document.test;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.impl.DocumentReaderServiceImpl;
 import org.exoplatform.services.document.impl.MSXExcelDocumentReader;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.xml.sax.SAXParseException;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -37,7 +34,6 @@ import java.io.InputStream;
 
 public class TestMSXExcelDocumentReader extends BaseStandaloneTest
 {
-  private static final Log  LOG = ExoLogger.getLogger(TestMSXExcelDocumentReader.class);
 
    DocumentReaderServiceImpl service;
 
@@ -100,13 +96,24 @@ public class TestMSXExcelDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-        service.getDocumentReader("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+         String text =
+            service.getDocumentReader("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                .getContentAsText(is);
 
-        fail("XXE are not allowed and must generate an error");
-      } catch (DocumentReadException e) {
-        LOG.info("Document was not read due to XXE prevention");
-      } finally {
+         String expected =
+            "Sheet2 " + "Ronaldo Eric Cantona Kaka Ronaldonho " + " Sheet1 "
+               + "Group Functionality Executor Begin End Tested "
+               + "XNNL XNNL Xay dung vung quan li nguyen lieu NamPH Tested " + "XNNL XNNL XNNL_HAVEST NamPH Tested "
+               + "XNNL XNNL XNNL_PIECE_OF_GROUND NamPH Tested " + "XNNL XNNL XNNL_76 NamPH "
+               + "XNNL XNNL XNNL_CREATE_REAP NamPH none " + "XNNL XNNL XNNL_SCALE NamPH Tested "
+               + "XNNL XNNL LASUCO_PROJECT NamPH " + "XNNL XNNL LASUCO_PROJECT NamPH Tested "
+               + "XNNL XNNL XNNL_BRANCH NamPH Tested " + "XNNL XNNL XNNL_SUGAR_RACE NamPH "
+               + "XNNL XNNL F_XNNL_DISTRI NamPH Tested " + "XNNL XNNL XNNL_LASUCO_USER NamPH ";
+
+         assertEquals("Wrong string returned", normalizeWhitespaces(expected), normalizeWhitespaces(text));
+      }
+      finally
+      {
          is.close();
       }
    }
@@ -131,13 +138,21 @@ public class TestMSXExcelDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-        service.getDocumentReader("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+         String text =
+            service.getDocumentReader("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                .getContentAsText(is);
 
+         String expected =
+            "Sheet2 " + "Ronaldo Eric Cantona Kaka Ronaldonho " + " Sheet1 "
+               + "Group Functionality Executor Begin End Tested "
+               + "XNNL XNNL Xay dung vung quan li nguyen lieu NamPH Tested " + "XNNL XNNL XNNL_HAVEST NamPH Tested "
+               + "XNNL XNNL XNNL_PIECE_OF_GROUND NamPH Tested " + "XNNL XNNL XNNL_76 NamPH "
+               + "XNNL XNNL XNNL_CREATE_REAP NamPH none " + "XNNL XNNL XNNL_SCALE NamPH Tested "
+               + "XNNL XNNL LASUCO_PROJECT NamPH " + "XNNL XNNL LASUCO_PROJECT NamPH Tested "
+               + "XNNL XNNL XNNL_BRANCH NamPH Tested " + "XNNL XNNL XNNL_SUGAR_RACE NamPH "
+               + "XNNL XNNL F_XNNL_DISTRI NamPH Tested " + "XNNL XNNL XNNL_LASUCO_USER NamPH ";
 
-        fail("XXE are not allowed and must generate an error");
-      } catch (DocumentReadException e) {
-        LOG.info("Document was not read due to XXE prevention");
+         assertEquals("Wrong string returned", normalizeWhitespaces(expected), normalizeWhitespaces(text));
       }
       finally
       {
@@ -172,7 +187,7 @@ public class TestMSXExcelDocumentReader extends BaseStandaloneTest
       }
       catch (DocumentReadException e)
       {
-        LOG.info("Document was not read due to XXE prevention");
+         // Expected
       }
       finally
       {

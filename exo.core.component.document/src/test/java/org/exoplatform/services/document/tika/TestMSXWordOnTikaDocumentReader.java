@@ -20,9 +20,6 @@ import org.exoplatform.services.document.AdvancedDocumentReader;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.test.BaseStandaloneTest;
-import org.exoplatform.services.document.test.TestMSXExcelDocumentReader;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -39,8 +36,6 @@ import java.io.Reader;
 public class TestMSXWordOnTikaDocumentReader extends BaseStandaloneTest
 {
    DocumentReaderService service;
-
-   private static final Log LOG = ExoLogger.getLogger(TestMSXWordOnTikaDocumentReader.class);
 
    @Override
    public void setUp() throws Exception
@@ -81,11 +76,11 @@ public class TestMSXWordOnTikaDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-        service.getDocumentReader("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+         String text =
+            service.getDocumentReader("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
                .getContentAsText(is);
-         fail("XXE are not allowed and must generate an error");
-       } catch (DocumentReadException e) {
-         LOG.info("Document was not read due to XXE prevention");
+         assertTrue(text
+            .contains("Before the test starts there is a directions section, which takes a few minutes to read"));
       }
       finally
       {
