@@ -20,9 +20,6 @@ import org.exoplatform.services.document.AdvancedDocumentReader;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.test.BaseStandaloneTest;
-import org.exoplatform.services.document.test.TestMSXWordDocumentReader;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -39,8 +36,6 @@ import java.io.Reader;
 public class TestMSXExcelOnTikaDocumentReader extends BaseStandaloneTest
 {
    DocumentReaderService service;
-
-   private static final Log LOG = ExoLogger.getLogger(TestMSXExcelOnTikaDocumentReader.class);
 
    public void setUp() throws Exception
    {
@@ -136,11 +131,24 @@ public class TestMSXExcelOnTikaDocumentReader extends BaseStandaloneTest
       is = new FileInputStream(file);
       try
       {
-        service.getDocumentReader("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+         String text =
+            service.getDocumentReader("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                .getContentAsText(is);
-        fail("XXE are not allowed and must generate an error");
-      } catch (DocumentReadException e) {
-        LOG.info("Document was not read due to XXE prevention");
+
+         String expected =
+            "Sheet2 Ronaldo Eric Cantona Kaka Ronaldonho "
+               + "&\"Times New Roman,Regular\"&12&A &\"Times New Roman,Regular\"&12Page &P "
+               + "Sheet1 ID Group Functionality Executor Begin End "
+               + "Tested XNNL XNNL Xay dung vung quan li nguyen lieu NamPH 2/2/05 10/02/2005 "
+               + "Tested XNNL XNNL XNNL_HAVEST NamPH 1223554 10/01/2005 "
+               + "Tested XNNL XNNL XNNL_PIECE_OF_GROUND NamPH 10/12/05 10/02/2005 "
+               + "Tested XNNL XNNL XNNL_76 NamPH TRUE 12/10/84 No XNNL XNNL XNNL_CREATE_REAP NamPH none 10/03/2005 No XNNL XNNL XNNL_SCALE NamPH 12/10/84 10/05/2005 "
+               + "Tested XNNL XNNL LASUCO_PROJECT NamPH 10/05/05 10/06/2005 No XNNL XNNL LASUCO_PROJECT NamPH "
+               + "Tested XNNL XNNL XNNL_BRANCH NamPH 12/12/05 06/10/2005 "
+               + "Tested XNNL XNNL XNNL_SUGAR_RACE NamPH 05/09/05 06/10/2005 No XNNL XNNL F_XNNL_DISTRI NamPH 05/09/05 06/10/2005 "
+               + "Tested XNNL XNNL XNNL_LASUCO_USER NamPH 09/09/05 06/10/2005 No";
+
+         assertEquals("Wrong string returned", normalizeWhitespaces(expected), normalizeWhitespaces(text));
       }
       finally
       {

@@ -136,9 +136,10 @@ public class TestPropertiesExtractionOnTika extends BaseStandaloneTest
          Properties etalon = new Properties();
 
          etalon.put(DCMetaData.TITLE, "test-Title");
-         etalon.put(DCMetaData.DATE, new Date(1662112998000L));
+         etalon.put(DCMetaData.DATE, new Date(1283247255000L));
          etalon.put(DCMetaData.SUBJECT, "test-Subject");
          etalon.put(DCMetaData.CREATOR, "Max Yakimenko");
+         etalon.put(DCMetaData.CONTRIBUTOR, "Max Yakimenko");
          etalon.put(DCMetaData.DESCRIPTION, "test-Comments");
 
          evalProps(etalon, props);

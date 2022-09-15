@@ -22,6 +22,7 @@ import org.apache.poi.ooxml.POIXMLProperties;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.ooxml.util.SAXHelper;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.xmlbeans.XmlException;
@@ -41,8 +42,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 /**
  * Stream based MS Excel Document Reader with low memory and cpu needs.
@@ -70,10 +69,7 @@ public class MSXExcelDocumentReader extends BaseDocumentReader
       InputSource sheetSource = new InputSource(sheetInputStream);
       try
       {
-        SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-        parserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-        SAXParser parser = parserFactory.newSAXParser();
-        XMLReader sheetParser = parser.getXMLReader();
+         XMLReader sheetParser = SAXHelper.newXMLReader();
          ContentHandler handler = new MSXExcelSheetXMLHandler(strings, sheetContentsExtractor, MAX_CELLTAB);
          sheetParser.setContentHandler(handler);
          sheetParser.parse(sheetSource);
