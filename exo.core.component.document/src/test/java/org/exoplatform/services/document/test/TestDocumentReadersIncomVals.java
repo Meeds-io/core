@@ -19,7 +19,6 @@
 package org.exoplatform.services.document.test;
 
 import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.impl.HTMLDocumentReader;
 import org.exoplatform.services.document.impl.MSExcelDocumentReader;
@@ -33,8 +32,6 @@ import org.exoplatform.services.document.impl.PDFDocumentReader;
 import org.exoplatform.services.document.impl.PPTDocumentReader;
 import org.exoplatform.services.document.impl.TextPlainDocumentReader;
 import org.exoplatform.services.document.impl.XMLDocumentReader;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.InputStream;
@@ -52,8 +49,6 @@ import java.util.List;
 public class TestDocumentReadersIncomVals extends BaseStandaloneTest
 {
    List<DocumentReader> serviceList;
-
-   private static final Log LOG = ExoLogger.getLogger(TestDocumentReadersIncomVals.class);
 
    public TestDocumentReadersIncomVals()
    {
@@ -117,9 +112,6 @@ public class TestDocumentReadersIncomVals extends BaseStandaloneTest
          try
          {
             assertEquals("", serviceList.get(i).getContentAsText(in));
-         }
-         catch (DocumentReadException e) {
-           LOG.info("Unable to read Document");
          }
          catch (Exception e)
          {

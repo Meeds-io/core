@@ -84,6 +84,16 @@
             </exclusion>
          </exclusions>
       </dependency>
+      <dependency>
+         <groupId>org.apache.poi</groupId>
+         <artifactId>poi-scratchpad</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>log4j</groupId>
+               <artifactId>log4j</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
 
       <dependency>
          <groupId>org.apache.poi</groupId>
@@ -97,17 +107,13 @@
                <groupId>xml-apis</groupId>
                <artifactId>xml-apis</artifactId>
             </exclusion>
+            <exclusion>
+               <groupId>org.apache.xmlbeans</groupId>
+               <artifactId>xmlbeans</artifactId>
+            </exclusion>
          </exclusions>
       </dependency>
-      <dependency>
-         <groupId>org.apache.poi</groupId>
-         <artifactId>poi-ooxml-full</artifactId>
-         <scope>compile</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.logging.log4j</groupId>
-         <artifactId>log4j-api</artifactId>
-      </dependency>
+
       <dependency>
          <groupId>org.apache.tika</groupId>
          <artifactId>tika-core</artifactId>
@@ -150,6 +156,17 @@
             <exclusion>
                <groupId>de.l3s.boilerpipe</groupId>
                <artifactId>boilerpipe</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+
+      <dependency>
+         <groupId>org.apache.xmlbeans</groupId>
+         <artifactId>xmlbeans</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>stax</groupId>
+               <artifactId>stax-api</artifactId>
             </exclusion>
          </exclusions>
       </dependency>
