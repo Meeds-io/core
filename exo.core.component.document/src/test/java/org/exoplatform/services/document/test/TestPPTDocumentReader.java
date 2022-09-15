@@ -48,8 +48,8 @@ public class TestPPTDocumentReader extends BaseStandaloneTest
       {
          String text = service.getDocumentReader("application/powerpoint").getContentAsText(is);
          String etalon =
-                       "TEST POWERPOINT\n" + "Manchester United\n\n" + "AC Milan\n" + "SLIDE 2\n" + "Eric Cantona\n\n"
-                           + "Kaka\n\n" + "Ronaldo\n\n" + "The natural scients universitys\n";
+            "TEST POWERPOINT\n" + "Manchester United \n\n" + "AC Milan\n\n\n" + "SLIDE 2 \n" + "Eric Cantona\n\n" + "Kaka\n\n"
+               + "Ronaldo\n\n" + "The natural scients universitys\n\n\n";
          assertEquals("Wrong string returned", etalon, text);
       }
       finally

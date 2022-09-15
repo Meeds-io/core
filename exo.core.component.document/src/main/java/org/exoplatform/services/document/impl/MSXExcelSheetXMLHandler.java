@@ -1,6 +1,5 @@
 package org.exoplatform.services.document.impl;
 
-import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.exoplatform.services.log.ExoLogger;
@@ -201,7 +200,7 @@ public class MSXExcelSheetXMLHandler extends DefaultHandler
                try
                {
                   int idx = Integer.parseInt(sstIndex);
-                  RichTextString rtss = sharedStringsTable.getItemAt(idx);
+                  XSSFRichTextString rtss = new XSSFRichTextString(sharedStringsTable.getEntryAt(idx));
                   thisStr = rtss.toString();
                }
                catch (NumberFormatException ex)
