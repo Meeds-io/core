@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.document.impl;
 
-import org.apache.poi.ooxml.util.SAXHelper;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -34,6 +33,8 @@ import java.io.Writer;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  * Created by The eXo Platform SAS A parser of XML files.
@@ -71,6 +72,9 @@ public class XMLDocumentReader extends BaseDocumentReader
       try
       {
          return parse(is);
+      }
+      catch (SAXException e) {
+        throw new DocumentReadException("Problem during the document parsing.", e);
       }
       finally
       {
@@ -123,30 +127,29 @@ public class XMLDocumentReader extends BaseDocumentReader
     * @param str the string which contain a text with user's tags.
     * @return The string cleaned from user's tags and their bodies.
     */
-   private String parse(InputStream is)
+   private String parse(InputStream is) throws SAXException
    {
       StringWriter writer = new StringWriter();
 
       DefaultHandler dh = new WriteOutContentHandler(writer);
       try
       {
-         XMLReader reader = SAXHelper.newXMLReader();
+        SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+        parserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        SAXParser parser = parserFactory.newSAXParser();
+        XMLReader reader = parser.getXMLReader();
          reader.setContentHandler(dh);
          reader.setErrorHandler(dh);
          reader.setDTDHandler(dh);
          reader.parse(new InputSource(is));
       }
-      catch (SAXException e)
-      {
-         return "";
-      }
       catch (IOException e)
       {
-         return "";
+        throw new RuntimeException("Exception when reading inputFile - " + e.getMessage());
       }
       catch (ParserConfigurationException e)
       {
-         return "";
+        throw new RuntimeException("SAX parser appears to be broken - " + e.getMessage());
       }
 
       return writer.toString();
