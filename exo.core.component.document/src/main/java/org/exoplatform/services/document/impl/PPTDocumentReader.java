@@ -72,17 +72,16 @@ public class PPTDocumentReader extends BaseDocumentReader
             return "";
          }
 
-         SlideShowExtractor ppe;
-         try
+         SlideShowFactory.addProvider(new HSLFSlideShowFactory());
+         try (SlideShowExtractor ppe = new SlideShowExtractor(SlideShowFactory.create(is)))
          {
-           SlideShowFactory.addProvider(new HSLFSlideShowFactory());
-           ppe = new SlideShowExtractor(SlideShowFactory.create(is));
+           return ppe.getText();
          }
          catch (IOException e)
          {
             throw new DocumentReadException("Can't open presentation.", e);
          }
-         return ppe.getText();
+
       }
       finally
       {
