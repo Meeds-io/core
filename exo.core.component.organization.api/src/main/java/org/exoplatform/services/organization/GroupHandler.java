@@ -19,9 +19,11 @@
 package org.exoplatform.services.organization;
 
 import org.exoplatform.commons.utils.ListAccess;
+import org.exoplatform.services.security.Identity;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS<br>
@@ -234,4 +236,8 @@ public interface GroupHandler
     * @param listener the group event listener instance.
     */
    void removeGroupEventListener(GroupEventListener listener);
+
+   default  Collection<Group> findAllGroupsByKeyword(String keyword, List<String> excludedGroupsTypes, Identity identity)throws Exception {
+      throw new UnsupportedOperationException();
+   }
 }
