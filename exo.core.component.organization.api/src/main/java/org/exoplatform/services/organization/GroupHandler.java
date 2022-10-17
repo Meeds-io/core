@@ -237,7 +237,33 @@ public interface GroupHandler
     */
    void removeGroupEventListener(GroupEventListener listener);
 
-   default  Collection<Group> findAllGroupsByKeyword(String keyword, List<String> excludedGroupsTypes, Identity identity)throws Exception {
+   /**
+    * use this method to look all the group that the user has at least one
+    * membership which name matches the given keyword and type not included in the excludedGroupsTypes list..
+    *
+    * @param user The username of the user
+    * @param keyword The name keyword
+    * @param excludedGroupsTypes List of excluded group types
+    * @return A collection of the found groups. The return collection cannot be
+    *         null, but it can be empty if no group is found.
+    * @throws Exception An exception is thrown if the method cannot access the
+    *           database.
+    */
+   default  Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, List<String> excludedGroupsTypes)throws Exception {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
+    * use this method to look all groups which name matches the given keyword and type not included in the excludedGroupsTypes list..
+    *
+    * @param keyword The name keyword
+    * @param excludedGroupsTypes List of excluded group types
+    * @return A collection of the found group. The return collection cannot be
+    *         null, but it can be empty if no group is found.
+    * @throws Exception An exception is thrown if the method cannot access the
+    *           database.
+    */
+   default  Collection<Group> findAllGroupsByKeyword(String keyword, List<String> excludedGroupsTypes)throws Exception {
       throw new UnsupportedOperationException();
    }
 }
