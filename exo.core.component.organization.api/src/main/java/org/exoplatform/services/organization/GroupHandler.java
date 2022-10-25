@@ -198,7 +198,7 @@ public interface GroupHandler
     * @param groupType The group type
     * @return A collection of the found group. The return collection cannot be
     *         null, but it can be empty if no group is found.
-    * @throws Exception An exception is thrown if the method cannot access the
+    * @throws IOException An exception is thrown if the method cannot access the
     *           database.
     */
    default Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, String groupType) throws IOException {
