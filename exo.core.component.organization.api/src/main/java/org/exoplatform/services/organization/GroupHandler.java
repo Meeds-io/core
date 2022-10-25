@@ -19,8 +19,6 @@
 package org.exoplatform.services.organization;
 
 import org.exoplatform.commons.utils.ListAccess;
-import org.exoplatform.services.security.Identity;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
