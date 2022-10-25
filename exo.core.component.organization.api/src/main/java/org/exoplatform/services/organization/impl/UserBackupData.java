@@ -23,8 +23,8 @@ import java.util.Collection;
 /**
  * May 28, 2004
  * 
- * @author: Tuan Nguyen
- * @version: $ID$
+ * @author Tuan Nguyen
+ * @version $ID$
  **/
 public class UserBackupData
 {

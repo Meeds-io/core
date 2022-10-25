@@ -21,7 +21,7 @@ import org.exoplatform.services.security.Credential;
 
 /**
  * A component Plugin that could be injected in
- * {@link OrganizationAuthenticatorImpl} to extend the way to authenticate users
+ * #OrganizationAuthenticatorImpl to extend the way to authenticate users
  */
 public abstract class AuthenticatorPlugin extends BaseComponentPlugin {
 

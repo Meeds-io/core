@@ -198,7 +198,7 @@ public interface GroupHandler
     * @param groupType The group type
     * @return A collection of the found group. The return collection cannot be
     *         null, but it can be empty if no group is found.
-    * @throws Exception An exception is thrown if the method cannot access the
+    * @throws IOException An exception is thrown if the method cannot access the
     *           database.
     */
    default Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, String groupType) throws IOException {
@@ -241,8 +241,8 @@ public interface GroupHandler
     *
     * @param user user name
     * @param keyword group name search keyword
-    * @param excludedGroupsTypes {@Link List} of excluded parent groups identified by its PLIDM type
-    * @return A {@Link Collection} of groups. The return collection cannot be
+    * @param excludedGroupsTypes {@link List} of excluded parent groups identified by its PLIDM type
+    * @return A {@link Collection} of groups. The return collection cannot be
     *         null, but it can be empty if no group is found.
     * @throws Exception An exception is thrown if the method cannot access the
     *           database.
@@ -256,8 +256,8 @@ public interface GroupHandler
     * by excluding the excludedGroupsTypes (parent groups identified by its PLIDM type)
     *
     * @param keyword group name search keyword
-    * @param excludedGroupsTypes {@Link List} of excluded parent groups identified by its PLIDM type
-    * @return A {@Link Collection} of groups. The return collection cannot be
+    * @param excludedGroupsTypes {@link List} of excluded parent groups identified by its PLIDM type
+    * @return A {@link Collection} of groups. The return collection cannot be
     *         null, but it can be empty if no group is found.
     * @throws Exception An exception is thrown if the method cannot access the
     *           database.
