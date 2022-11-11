@@ -178,6 +178,7 @@ public class CacheableGroupHandlerImpl implements GroupHandler
    public Collection<Group> findAllGroupsByKeyword(String keyword, List<String> excludedGroupsTypes) throws Exception {
       return groupHandler.findAllGroupsByKeyword(keyword, excludedGroupsTypes);
    }
+
    @Override
    public Collection<Group> findGroupsOfUserByKeyword(String user,
                                                       String keyword,
