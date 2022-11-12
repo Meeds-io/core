@@ -19,9 +19,9 @@
 package org.exoplatform.services.organization;
 
 import org.exoplatform.commons.utils.ListAccess;
-
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS<br>
@@ -234,4 +234,35 @@ public interface GroupHandler
     * @param listener the group event listener instance.
     */
    void removeGroupEventListener(GroupEventListener listener);
+
+   /**
+    * Searches for groups of the user (at least has one associated membershipType) which name matches the given keyword
+    * by excluding the excludedGroupsTypes (parent groups identified by its PLIDM type)
+    *
+    * @param user user name
+    * @param keyword group name search keyword
+    * @param excludedGroupsTypes {@Link List} of excluded parent groups identified by its PLIDM type
+    * @return A {@Link Collection} of groups. The return collection cannot be
+    *         null, but it can be empty if no group is found.
+    * @throws Exception An exception is thrown if the method cannot access the
+    *           database.
+    */
+   default Collection<Group> findGroupsOfUserByKeyword(String user, String keyword, List<String> excludedGroupsTypes) throws Exception {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
+    * Searches for groups which name matches the given keyword
+    * by excluding the excludedGroupsTypes (parent groups identified by its PLIDM type)
+    *
+    * @param keyword group name search keyword
+    * @param excludedGroupsTypes {@Link List} of excluded parent groups identified by its PLIDM type
+    * @return A {@Link Collection} of groups. The return collection cannot be
+    *         null, but it can be empty if no group is found.
+    * @throws Exception An exception is thrown if the method cannot access the
+    *           database.
+    */
+   default Collection<Group> findAllGroupsByKeyword(String keyword, List<String> excludedGroupsTypes) throws Exception {
+      throw new UnsupportedOperationException();
+   }
 }
