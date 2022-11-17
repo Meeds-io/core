@@ -32,12 +32,12 @@ import java.sql.Statement;
 
 import javax.transaction.UserTransaction;
 
-/*
+/**
  * Thu, May 15, 2003 @   
- * @author: Tuan Nguyen
- * @version: $Id: TestDatabaseService.java 5332 2006-04-29 18:32:44Z geaz $
- * @since: 0.0
- * @email: tuan08@yahoo.com
+ * @author Tuan Nguyen
+ * @version $Id: TestDatabaseService.java 5332 2006-04-29 18:32:44Z geaz $
+ * @since 0.0
+ * @email tuan08@yahoo.com
  */
 public class TestDatabaseService extends TestCase
 {
