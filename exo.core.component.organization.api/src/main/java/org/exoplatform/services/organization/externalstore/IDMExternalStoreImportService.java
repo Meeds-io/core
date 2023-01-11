@@ -120,7 +120,7 @@ public class IDMExternalStoreImportService implements Startable {
     } catch (Exception e) {
       LOG.error("Error while configuring external store", e);
     } finally {
-      forceCloseTransaction();
+      RequestLifeCycle.end();
     }
   }
 
