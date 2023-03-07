@@ -56,7 +56,6 @@
    <modules>
       <module>exo.core.component.security.core</module>
       <module>exo.core.component.database</module>
-      <module>exo.core.component.document</module>
       <module>exo.core.component.script.groovy</module>
       <module>exo.core.component.organization.tests</module>
       <module>exo.core.component.organization.api</module>
@@ -82,11 +81,6 @@
          <dependency>
             <groupId>org.exoplatform.core</groupId>
             <artifactId>exo.core.component.database</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.exoplatform.core</groupId>
-            <artifactId>exo.core.component.document</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
