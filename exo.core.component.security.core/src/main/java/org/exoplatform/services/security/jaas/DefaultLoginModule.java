@@ -119,8 +119,6 @@ public class DefaultLoginModule extends AbstractLoginModule
             username = authenticator.validateUser(credentials);
             identity = authenticator.createIdentity(username);
             sharedState.put("javax.security.auth.login.name", username);
-
-            subject.getPrivateCredentials().add(password);
             subject.getPublicCredentials().add(new UsernameCredential(username));
          }
          return true;
