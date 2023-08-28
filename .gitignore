@@ -3,14 +3,6 @@
 #
 **/pom.xml.versionsBackup
 
-# /exo.core.component.security.core/
-/exo.core.component.security.core/.project
-/exo.core.component.security.core/.classpath
-/exo.core.component.security.core/target
-
-# /packaging/module/
-/packaging/module/target
-
 #
 # Default excludes
 #
@@ -48,5 +40,5 @@ target/
 
 # Misc
 *.swp
-.rebel.xml.bak
-rebel.xml
+*.log
+*.epoch
