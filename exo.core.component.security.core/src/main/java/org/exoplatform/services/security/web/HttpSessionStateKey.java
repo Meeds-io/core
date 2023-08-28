@@ -20,7 +20,7 @@ package org.exoplatform.services.security.web;
 
 import org.exoplatform.services.security.StateKey;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
