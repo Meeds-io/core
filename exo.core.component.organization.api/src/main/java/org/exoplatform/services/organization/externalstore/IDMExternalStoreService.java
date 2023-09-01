@@ -54,6 +54,8 @@ public interface IDMExternalStoreService {
 
   public static final String            GROUP_MODIFIED_FROM_EXTERNAL_STORE      = "exo.idm.externalStore.group.modified";
 
+  public static final String            USER_PROFILE_ADDED_FROM_EXTERNAL_STORE  = "exo.idm.externalStore.user.profile.new";
+
   /**
    * Authenticates user using external store only
    * 
