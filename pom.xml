@@ -32,14 +32,14 @@
 
    <groupId>org.exoplatform.core</groupId>
    <artifactId>core-parent</artifactId>
-   <version>6.5.0-exo-20230906</version>
+   <version>6.5.x-exo-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <name>eXo PLF:: Core</name>
    <description>Exoplatform SAS 'eXo Core' project.</description>
 
    <properties>
-      <org.exoplatform.kernel.version>6.5.0-exo-20230906</org.exoplatform.kernel.version>
+      <org.exoplatform.kernel.version>6.5.x-exo-SNAPSHOT</org.exoplatform.kernel.version>
       
       <!-- Sonar properties -->
       <sonar.organization>meeds-io</sonar.organization>
@@ -50,7 +50,7 @@
       <connection>scm:git:git://github.com/meeds-io/core.git</connection>
       <developerConnection>scm:git:git@github.com:meeds-io/core.git</developerConnection>
       <url>https://github.com/meeds-io/core</url>
-     <tag>6.5.0-exo-20230906</tag>
+     <tag>HEAD</tag>
   </scm>
 
    <modules>
