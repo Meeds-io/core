@@ -7,6 +7,7 @@ grant codeBase "@MAIN_CLASSES@-"{
 };
 
 grant codeBase "@TEST_CLASSES@-"{
+  permission java.lang.RuntimePermission "accessDeclaredMembers";
 };
 
 grant codeBase "@MAIN_CLASSES@../../../exo.core.component.security.core/-"{
