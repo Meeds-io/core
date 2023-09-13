@@ -780,7 +780,7 @@ public class IDMExternalStoreImportService implements Startable {
     UserProfile externalUserProfile = externalStoreService.getEntity(IDMEntityType.USER_PROFILE, username);
 
     if (externalUserProfile != null && externalUserProfile.getUserInfoMap() != null
-        && !externalUserProfile.getUserInfoMap().isEmpty()) {
+         && !externalUserProfile.getUserInfoMap().isEmpty()) {
       Map<String, String> externalUserInfoMap = externalUserProfile.getUserInfoMap();
       Map<String, String> internalUserInfoMap = (internalUserProfile == null
           || internalUserProfile.getUserInfoMap() == null) ? new HashMap<>() : internalUserProfile.getUserInfoMap();
@@ -798,11 +798,10 @@ public class IDMExternalStoreImportService implements Startable {
       }
 
       if (isModified) {
-        internalUserInfoMap.putAll(externalUserInfoMap);
-        UserProfile userProfile = organizationService.getUserProfileHandler().createUserProfileInstance(username);
-        userProfile.setUserInfoMap(internalUserInfoMap);
-        organizationService.getUserProfileHandler().saveUserProfile(userProfile, true);
-        return userProfile;
+        if (!externalUserInfoMap.containsKey("username")) {
+          externalUserInfoMap.put("username", username);
+        }
+        listenerService.broadcast(IDMExternalStoreService.USER_PROFILE_ADDED_FROM_EXTERNAL_STORE, this, externalUserInfoMap);
       }
     }
     return internalUserProfile;
