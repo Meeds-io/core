@@ -56,10 +56,12 @@ public interface IDMExternalStoreService {
 
   public static final String            USER_PROFILE_ADDED_FROM_EXTERNAL_STORE  = "exo.idm.externalStore.user.profile.new";
 
+  public static final String             AUTHORIZE_LOGIN_PARAM = "exo.idm.externalStore.authorizelogin";
+
   /**
    * Authenticates user using external store only
    * 
-   * @param username
+   * @param usernamece
    * @param password
    * @return
    * @throws Exception
