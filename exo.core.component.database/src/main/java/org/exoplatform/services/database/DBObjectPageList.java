@@ -18,14 +18,15 @@
  */
 package org.exoplatform.services.database;
 
-import org.exoplatform.commons.utils.PageList;
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+
+import org.exoplatform.commons.utils.PageList;
 
 /**
  * @author Tuan Nguyen (tuan08@users.sourceforge.net)

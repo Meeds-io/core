@@ -18,17 +18,19 @@
  */
 package org.exoplatform.services.organization.impl;
 
-import org.exoplatform.services.organization.ExtendedCloneable;
-import org.exoplatform.services.organization.MembershipType;
+import java.util.Date;
+import java.util.Objects;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.Date;
-import java.util.Objects;
+import org.exoplatform.services.organization.ExtendedCloneable;
+import org.exoplatform.services.organization.MembershipType;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * Created by The eXo Platform SAS .

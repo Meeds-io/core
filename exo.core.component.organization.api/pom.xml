@@ -48,7 +48,11 @@
          <artifactId>exo.core.component.security.core</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.hibernate</groupId>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.hibernate.orm</groupId>
          <artifactId>hibernate-core</artifactId>
          <exclusions>
             <exclusion>
