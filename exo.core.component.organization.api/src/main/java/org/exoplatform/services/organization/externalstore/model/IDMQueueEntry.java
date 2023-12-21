@@ -3,7 +3,7 @@ package org.exoplatform.services.organization.externalstore.model;
 import java.util.Calendar;
 import java.util.Objects;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * IDM Queue entry DTO
