@@ -81,7 +81,7 @@
          <artifactId>jboss-logging</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.hibernate</groupId>
+         <groupId>org.hibernate.orm</groupId>
          <artifactId>hibernate-core</artifactId>
          <exclusions>
             <exclusion>
