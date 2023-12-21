@@ -26,12 +26,17 @@ package org.exoplatform.services.organization.impl;
 
 import java.util.Objects;
 
-import javax.persistence.*;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import org.exoplatform.services.organization.*;
+import org.exoplatform.services.organization.ExtendedCloneable;
+import org.exoplatform.services.organization.Group;
+import org.exoplatform.services.organization.OrganizationService;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
