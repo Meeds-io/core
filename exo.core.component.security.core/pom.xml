@@ -27,7 +27,7 @@
    <parent>
       <groupId>org.exoplatform.core</groupId>
       <artifactId>core-parent</artifactId>
-      <version>6.6.x-exo-SNAPSHOT</version>
+      <version>6.6.0-exo-20240129</version>
    </parent>
 
    <artifactId>exo.core.component.security.core</artifactId>
