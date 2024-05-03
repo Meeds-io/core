@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.xml.transform.impl;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.xml.resolving.XMLResolvingService;
@@ -63,7 +61,7 @@ public abstract class TransformerBase implements AbstractTransformer
    public TransformerBase()
    {
       LOG.debug("Current javax.xml.parsers.SAXParserFactory sys property [ "
-         + PrivilegedSystemHelper.getProperty("javax.xml.parsers.SAXParserFactory", "-Not set-") + "]");
+         + System.getProperty("javax.xml.parsers.SAXParserFactory", "-Not set-") + "]");
 
       tSAXFactory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
    }
@@ -73,13 +71,7 @@ public abstract class TransformerBase implements AbstractTransformer
     */
    static public XMLReader getXMLReader() throws SAXException
    {
-      return SecurityHelper.doPrivilegedSAXExceptionAction(new PrivilegedExceptionAction<XMLReader>()
-      {
-         public XMLReader run() throws Exception
-         {
-            return XMLReaderFactory.createXMLReader();
-         }
-      });
+      return XMLReaderFactory.createXMLReader();
    }
 
    public void setResolvingService(XMLResolvingService r)

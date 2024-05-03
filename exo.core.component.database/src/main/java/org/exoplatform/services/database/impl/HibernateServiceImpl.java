@@ -30,8 +30,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import org.exoplatform.commons.exception.ObjectNotFoundException;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentRequestLifecycle;
 import org.exoplatform.container.xml.InitParams;
@@ -64,11 +62,7 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
   public HibernateServiceImpl(InitParams initParams) {
     threadLocal_ = new ThreadLocal<Session>();
     PropertiesParam param = initParams.getPropertiesParam("hibernate.properties");
-    conf_ = SecurityHelper.doPrivilegedAction(new PrivilegedAction<HibernateConfigurationImpl>() {
-      public HibernateConfigurationImpl run() {
-        return new HibernateConfigurationImpl();
-      }
-    });
+    conf_ = new HibernateConfigurationImpl();
     Iterator<?> properties = param.getPropertyIterator();
     while (properties.hasNext()) {
       Property p = (Property) properties.next();
@@ -79,7 +73,7 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
     String connectionURL = conf_.getProperty("hibernate.connection.url");
     if (connectionURL != null) {
       connectionURL =
-                    connectionURL.replace("${java.io.tmpdir}", PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+                    connectionURL.replace("${java.io.tmpdir}", System.getProperty("java.io.tmpdir"));
       conf_.setProperty("hibernate.connection.url", connectionURL);
     }
   }
@@ -93,12 +87,7 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
    */
   public SessionFactory getSessionFactory() {
     if (sessionFactory_ == null) {
-      sessionFactory_ = SecurityHelper.doPrivilegedAction(new PrivilegedAction<SessionFactory>() {
-        public SessionFactory run() {
-          SessionFactory factory = conf_.buildSessionFactory();
-          return factory;
-        }
-      });
+      sessionFactory_ = conf_.buildSessionFactory();
     }
 
     return sessionFactory_;

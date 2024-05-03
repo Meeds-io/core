@@ -18,15 +18,12 @@
  */
 package org.exoplatform.services.database;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.table.IDGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -96,14 +93,7 @@ public class ExoDatasource
    public ExoDatasource(final DataSource ds) throws Exception
    {
       xaDatasource_ = ds;
-      DatabaseMetaData metaData =
-         SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<DatabaseMetaData>()
-         {
-            public DatabaseMetaData run() throws SQLException
-            {
-               return ds.getConnection().getMetaData();
-            }
-         });
+      DatabaseMetaData metaData = ds.getConnection().getMetaData();
 
       databaseName_ = metaData.getDatabaseProductName();
       databaseVersion_ = metaData.getDatabaseProductVersion();

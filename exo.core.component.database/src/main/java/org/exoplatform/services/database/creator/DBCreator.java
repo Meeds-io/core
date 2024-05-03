@@ -20,7 +20,6 @@ package org.exoplatform.services.database.creator;
 
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.IOUtil;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -31,7 +30,6 @@ import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.database.utils.JDBCUtils;
 
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -446,14 +444,8 @@ public class DBCreator
       {
          ClassLoading.forName(connectionProperties.get(DRIVER_NAME), this);
 
-         conn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-         {
-            public Connection run() throws Exception
-            {
-               return DriverManager.getConnection(serverUrl, connectionProperties.get(USERNAME),
-                  connectionProperties.get(PASSWORD));
-            }
-         });
+         conn = DriverManager.getConnection(serverUrl, connectionProperties.get(USERNAME),
+                                            connectionProperties.get(PASSWORD));
 
          return conn;
       }

@@ -78,7 +78,6 @@ public class ConversationState implements ThreadContextHolder
     */
    public static void setCurrent(ConversationState state)
    {
-      checkPermissions();
       current.set(state);
    }
 
@@ -98,7 +97,6 @@ public class ConversationState implements ThreadContextHolder
     */
    public void setAttribute(String name, Object value)
    {
-      checkPermissions();
       this.attributes.put(name, value);
    }
 
@@ -128,7 +126,6 @@ public class ConversationState implements ThreadContextHolder
     */
    public void removeAttribute(String name)
    {
-      checkPermissions();
       this.attributes.remove(name);
    }
 
@@ -140,15 +137,4 @@ public class ConversationState implements ThreadContextHolder
       return new ThreadContext(current);
    }
 
-   /**
-    *  Checks if modification allowed
-    */
-   private static void checkPermissions()
-   {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(PermissionConstants.MODIFY_CONVERSATION_STATE_PERMISSION);
-      }
-   }
 }
