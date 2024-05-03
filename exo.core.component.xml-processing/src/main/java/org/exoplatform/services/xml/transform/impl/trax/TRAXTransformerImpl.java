@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.xml.transform.impl.trax;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.xml.transform.NotSupportedIOTypeException;
 import org.exoplatform.services.xml.transform.impl.TransformerBase;
 import org.exoplatform.services.xml.transform.trax.TRAXTransformer;
@@ -29,8 +28,6 @@ import org.xml.sax.XMLReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 
 import javax.xml.transform.ErrorListener;
@@ -76,32 +73,9 @@ public class TRAXTransformerImpl extends TransformerBase implements TRAXTransfor
    public TRAXTransformerImpl(final Source source) throws TransformerConfigurationException
    {
       final SAXTransformerFactory saxTFactory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-      try
-      {
-         tHandler = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<TransformerHandler>()
-         {
-            public TransformerHandler run() throws Exception
-            {
-               return saxTFactory.newTransformerHandler(source);
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof TransformerConfigurationException)
-         {
-            throw (TransformerConfigurationException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+
+      tHandler = saxTFactory.newTransformerHandler(source);
+      
    }
 
    public TRAXTransformerImpl(Templates templates) throws TransformerConfigurationException
@@ -160,18 +134,11 @@ public class TRAXTransformerImpl extends TransformerBase implements TRAXTransfor
       {
          final XMLReader fXMLReader = xmlReader;
          final InputSource fInputSource = inputSource;
-         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
-         {
-            public Void run() throws Exception
-            {
-               fXMLReader.parse(fInputSource);
-               return null;
-            }
-         });
+         fXMLReader.parse(fInputSource);
       }
-      catch (PrivilegedActionException pae)
+      catch (Exception e)
       {
-         Throwable cause = pae.getCause();
+         Throwable cause = e.getCause();
          if (cause instanceof SAXException)
          {
             throw new TransformerException(cause);

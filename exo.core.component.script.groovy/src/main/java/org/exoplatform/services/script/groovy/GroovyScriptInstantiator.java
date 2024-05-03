@@ -24,7 +24,6 @@ import groovy.lang.GroovyCodeSource;
 import org.codehaus.groovy.control.CompilationFailedException;
 
 import org.exoplatform.commons.utils.IOUtil;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.component.ComponentPlugin;
@@ -136,26 +135,14 @@ public class GroovyScriptInstantiator
       GroovyClassLoader loader;
       if (mapping.size() > 0)
       {
-         JarJarClassLoader jarjarLoader = SecurityHelper.doPrivilegedAction(new PrivilegedAction<JarJarClassLoader>()
-         {
-            public JarJarClassLoader run()
-            {
-               return new JarJarClassLoader();
-            }
-         });
+         JarJarClassLoader jarjarLoader = new JarJarClassLoader();
 
          jarjarLoader.addMapping(mapping);
          loader = jarjarLoader;
       }
       else
       {
-         loader = SecurityHelper.doPrivilegedAction(new PrivilegedAction<GroovyClassLoader>()
-         {
-            public GroovyClassLoader run()
-            {
-               return new GroovyClassLoader();
-            }
-         });
+         loader = new GroovyClassLoader();
       }
       return instantiateScript(stream, name, loader);
    }
@@ -181,40 +168,8 @@ public class GroovyScriptInstantiator
          loader = new GroovyClassLoader();
       }
       Class<?> clazz = null;
-      try
-      {
-         final GroovyClassLoader fLoader = loader;
-         clazz = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Class<?>>()
-         {
-            public Class<?> run() throws Exception
-            {
-               if (name != null && name.length() > 0)
-               {
-                  return fLoader.parseClass(stream, name);
-               }
-               else
-               {
-                  return fLoader.parseClass(IOUtil.getStreamContentAsString(stream));
-               }
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof CompilationFailedException)
-         {
-            throw new IOException("Error occurs when parse stream, compiler error:\n " + cause.getMessage(), cause);
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      final GroovyClassLoader fLoader = loader;
+      clazz = fLoader.parseClass(IOUtil.getStreamContentAsString(stream));
 
       try
       {
@@ -253,13 +208,7 @@ public class GroovyScriptInstantiator
       }
 
       final GroovyClassLoader fLoader = loader;
-      Class<?> clazz = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Class<?>>()
-      {
-         public Class<?> run()
-         {
-            return fLoader.parseClass(codeSource);
-         }
-      });
+      Class<?> clazz = fLoader.parseClass(codeSource);
 
       try
       {
