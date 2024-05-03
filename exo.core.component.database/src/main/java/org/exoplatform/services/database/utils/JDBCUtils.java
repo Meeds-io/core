@@ -18,11 +18,9 @@
  */
 package org.exoplatform.services.database.utils;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -272,13 +270,7 @@ public class JDBCUtils
     */
    public static String resolveDialect(final DataSource dataSource) throws SQLException
    {
-      Connection jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-      {
-         public Connection run() throws Exception
-         {
-            return dataSource.getConnection();
-         }
-      });
+      Connection jdbcConn = dataSource.getConnection();
 
       try
       {

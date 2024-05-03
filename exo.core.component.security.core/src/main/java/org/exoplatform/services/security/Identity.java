@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.security;
 
-import org.exoplatform.commons.utils.secure.SecureCollections;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -87,11 +85,8 @@ public class Identity
    public Identity(String userId, Collection<MembershipEntry> memberships, Collection<String> roles)
    {
       this.userId = userId;
-      this.memberships =
-         SecureCollections.secureSet(new MembershipHashSet(memberships),
-            PermissionConstants.MODIFY_IDENTITY_PERMISSION);
-      this.roles =
-         SecureCollections.secureSet(new HashSet<String>(roles), PermissionConstants.MODIFY_IDENTITY_PERMISSION);;
+      this.memberships = new MembershipHashSet(memberships);
+      this.roles = new HashSet<>(roles);
    }
 
    /**
@@ -201,11 +196,6 @@ public class Identity
     */
    public void setSubject(Subject subject)
    {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(PermissionConstants.MODIFY_IDENTITY_PERMISSION);
-      }
       this.subject = subject;
    }
 
