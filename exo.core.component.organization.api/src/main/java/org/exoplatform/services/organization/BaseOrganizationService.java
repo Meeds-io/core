@@ -107,10 +107,11 @@ public abstract class BaseOrganizationService implements OrganizationService, St
     for (OrganizationServiceInitializer listener : listeners_) {
       try {
         listener.init(this, entityType);
-      } catch (Exception ex) {
+      } catch (Exception e) {
         LOG.warn("Failed start Organization Service {}, probably because of configuration error. Error occurs when initialize {}",
                  getClass().getName(),
-                 listener.getClass().getName());
+                 listener.getClass().getName(),
+                 e);
       }
     }
   }
