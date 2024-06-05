@@ -51,10 +51,18 @@ package org.exoplatform.services.organization;
  */
 public interface OrganizationServiceInitializer
 {
+
+  static final String USERS_ENTITY_TYPE  = "users";
+
+  static final String GROUPS_ENTITY_TYPE = "groups";
+
+  static final String ROLES_ENTITY_TYPE  = "membershipTypes";
+
    /**
     *  The Organization Service Initializer to create users, groups and membership types.
     *
     * @param service OrganizationService is the service that allows to access the Organization model.
+    * @param entityType Entity Type to consider for importing
     */
-   public void init(OrganizationService service) throws Exception;
+   public void init(OrganizationService service, String entityType) throws Exception;
 }
