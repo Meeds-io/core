@@ -25,14 +25,14 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
-      <groupId>org.exoplatform.core</groupId>
+      <groupId>io.meeds.core</groupId>
       <artifactId>core-parent</artifactId>
       <version>7.0.x-exo-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.core.component.script.groovy</artifactId>
 
-   <name>eXo PLF Core :: Component :: Groovy Scripts Instantiator</name>
+   <name>Meeds:: PLF Core :: Component :: Groovy Scripts Instantiator</name>
    <description>Groovy Scripts Instantiator of Exoplatform SAS 'eXo Core' project.</description>
 
    <properties>
@@ -41,11 +41,11 @@
 
    <dependencies>
       <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
+         <groupId>io.meeds.kernel</groupId>
          <artifactId>exo.kernel.container</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
+         <groupId>io.meeds.kernel</groupId>
          <artifactId>exo.kernel.commons.test</artifactId>
          <scope>test</scope>
       </dependency>
