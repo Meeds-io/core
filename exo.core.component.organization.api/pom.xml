@@ -54,24 +54,6 @@
       <dependency>
          <groupId>org.hibernate.orm</groupId>
          <artifactId>hibernate-core</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>org.slf4j</groupId>
-               <artifactId>slf4j-api</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.jboss.spec.javax.transaction</groupId>
-               <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.jboss.logging</groupId>
-               <artifactId>jboss-logging</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.javassist</groupId>
-               <artifactId>javassist</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.mockito</groupId>
