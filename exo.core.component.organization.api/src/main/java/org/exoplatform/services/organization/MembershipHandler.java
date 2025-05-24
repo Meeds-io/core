@@ -1,20 +1,20 @@
-/*
- * Copyright (C) 2009 eXo Platform SAS.
+/**
+ * This file is part of the Meeds project (https://meeds.io/).
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright (C) 2020 - 2025 Meeds Association contact@meeds.io
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exoplatform.services.organization;
 
@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by The eXo Platform SAS<br>
  * This interface is a sub part of the organization service.
  * It is used to manage the memberships -
  * the relation of user , group, and membership type - and broadcast the
@@ -33,8 +32,6 @@ import java.util.List;
  * type event. Each event should have 2 phases: pre event and post event. The
  * method linkMembership(..) and removeMembership(..) broadcast the event at
  * each phase so the listeners can handle the event properly
- * @author <a href="mailto:tuan08@users.sourceforge.net">Tuan Nguyen</a>
- * @LevelAPI Platform
  */
 public interface MembershipHandler
 {
