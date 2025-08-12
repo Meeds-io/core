@@ -32,7 +32,7 @@
 
    <groupId>io.meeds.core</groupId>
    <artifactId>core-parent</artifactId>
-   <version>7.0.x-exo-SNAPSHOT</version>
+   <version>7.0.3-exo-RC01</version>
    <packaging>pom</packaging>
 
    <name>Meeds:: PLF:: Core</name>
@@ -51,7 +51,7 @@
       <connection>scm:git:git://github.com/meeds-io/core.git</connection>
       <developerConnection>scm:git:git@github.com:meeds-io/core.git</developerConnection>
       <url>https://github.com/meeds-io/core</url>
-     <tag>HEAD</tag>
+     <tag>7.0.3-exo-RC01</tag>
   </scm>
 
    <modules>
