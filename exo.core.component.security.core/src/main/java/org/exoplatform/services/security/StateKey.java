@@ -18,7 +18,8 @@
  */
 package org.exoplatform.services.security;
 
-public interface StateKey
-{
+import java.io.Serializable;
+
+public interface StateKey extends Serializable {
 
 }

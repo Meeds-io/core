@@ -22,39 +22,37 @@ import org.exoplatform.services.security.StateKey;
 
 import jakarta.servlet.http.HttpSession;
 
-public final class HttpSessionStateKey implements StateKey
-{
+public final class HttpSessionStateKey implements StateKey {
 
-   /**
-    * HTTP session ID. 
-    */
-   private final String sessionId;
+  private static final long serialVersionUID = 3009905438380354994L;
 
-   public HttpSessionStateKey(HttpSession httpSession)
-   {
-      this.sessionId = httpSession.getId();
-   }
+  /**
+   * HTTP session ID.
+   */
+  private final String      sessionId;
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj == null)
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      return sessionId.equals(((HttpSessionStateKey)obj).sessionId);
-   }
+  public HttpSessionStateKey(HttpSession httpSession) {
+    this.sessionId = httpSession.getId();
+  }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public int hashCode()
-   {
-      return sessionId.hashCode();
-   }
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    } else if (getClass() != obj.getClass()) {
+      return false;
+    } else {
+      return sessionId.equals(((HttpSessionStateKey) obj).sessionId);
+    }
+  }
 
+  @Override
+  public int hashCode() {
+    return sessionId.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return String.format("HTTP Session %s", sessionId);
+  }
 }

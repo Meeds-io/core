@@ -18,115 +18,52 @@
  */
 package org.exoplatform.services.security;
 
-import org.exoplatform.container.spi.DefinitionByType;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ValueParam;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
+import org.exoplatform.services.cache.CacheService;
+import org.exoplatform.services.cache.ExoCache;
 
-import java.util.concurrent.ConcurrentHashMap;
+public class IdentityRegistry {
 
-@DefinitionByType
-public class IdentityRegistry
-{
+  private static final String              CACHE_NAME = "portal.IdentityRegistry";
 
-   /**
-    * "concurrency-level".
-    */
-   public static final String INIT_PARAM_CONCURRENCY_LEVEL = "concurrency-level";
+  private final ExoCache<String, Identity> identitiesCache;
 
-   /**
-    * Logger.
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.core.component.security.core.IdentityRegistry");
+  public IdentityRegistry(CacheService cacheService) {
+    identitiesCache = cacheService.getCacheInstance(CACHE_NAME);
+  }
 
-   /**
-    * Default concurrency level.
-    */
-   private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+  /**
+   * Get identity for supplied user ID.
+   * 
+   * @param userId user ID
+   * @return identity or null if not found
+   */
+  public Identity getIdentity(String userId) {
+    return identitiesCache.get(userId);
+  }
 
-   /**
-    * Identities.
-    */
-   private final ConcurrentHashMap<String, Identity> identities;
+  /**
+   * Register new identity in registry.
+   * 
+   * @param identity {@link Identity}
+   */
+  public void register(Identity identity) {
+    this.identitiesCache.put(identity.getUserId(), identity);
+  }
 
-   public IdentityRegistry(InitParams params)
-   {
-      this(parseConcurrencyLevel(params));
-   }
+  /**
+   * Remove identity with supplied user ID.
+   * 
+   * @param userId user ID
+   */
+  public void unregister(String userId) {
+    this.identitiesCache.remove(userId);
+  }
 
-   /**
-    * Try to parse concurrency level attribute from init parameters.
-    * 
-    * @param params See {@link InitParams}
-    * @return parsed parameter or default if parameter not set or can't be parsed
-    */
-   private static int parseConcurrencyLevel(InitParams params)
-   {
-      try
-      {
-         if (params != null)
-         {
-            ValueParam concurrencyLevel = params.getValueParam(INIT_PARAM_CONCURRENCY_LEVEL);
-
-            if (concurrencyLevel != null)
-            {
-               return Integer.valueOf(concurrencyLevel.getValue());
-            }
-         }
-
-         return DEFAULT_CONCURRENCY_LEVEL;
-      }
-      catch (NumberFormatException e)
-      {
-         LOG.error("Can't parse parameter " + INIT_PARAM_CONCURRENCY_LEVEL, e);
-         return DEFAULT_CONCURRENCY_LEVEL;
-      }
-   }
-
-   /**
-    * Create identity registry.
-    * @param concurrencyLevel concurrency level for ConcurrentHashMap 
-    */
-   private IdentityRegistry(int concurrencyLevel)
-   {
-      identities = new ConcurrentHashMap<String, Identity>(concurrencyLevel, 0.75f, concurrencyLevel);
-   }
-
-   /**
-    * Get identity for supplied user ID.
-    * @param userId user ID
-    * @return identity or null if not found
-    */
-   public Identity getIdentity(String userId)
-   {
-      return identities.get(userId);
-   }
-
-   /**
-    * Register new identity in registry.
-    * @param identity {@link Identity}
-    */
-   public void register(Identity identity)
-   {
-      this.identities.put(identity.getUserId(), identity);
-   }
-
-   /**
-    * Remove identity with supplied user ID. 
-    * @param userId user ID
-    */
-   public void unregister(String userId)
-   {
-      this.identities.remove(userId);
-   }
-
-   /**
-    * Remove all identities.
-    */
-   void clear()
-   {
-      identities.clear();
-   }
+  /**
+   * Remove all identities.
+   */
+  void clear() {
+    identitiesCache.clearCache();
+  }
 
 }
