@@ -20,6 +20,7 @@ package org.exoplatform.services.security;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -60,7 +61,7 @@ public class Identity
     */
    public Identity(String userId)
    {
-      this(userId, new HashSet<MembershipEntry>(), new HashSet<String>());
+      this(userId, new HashSet<>(), new HashSet<>());
    }
 
    /**
@@ -69,7 +70,7 @@ public class Identity
     */
    public Identity(String userId, Collection<MembershipEntry> memberships)
    {
-      this(userId, memberships, new HashSet<String>());
+      this(userId, memberships, new HashSet<>());
    }
 
    /**
@@ -129,7 +130,7 @@ public class Identity
     */
    public Set<String> getGroups()
    {
-      Set<String> groups = new HashSet<String>();
+      Set<String> groups = new HashSet<>();
       for (MembershipEntry m : memberships)
       {
          groups.add(m.getGroup());
@@ -204,4 +205,31 @@ public class Identity
    {
       return memberships.contains(checkMe);
    }
+
+   @Override
+   public int hashCode() {
+     return Objects.hash(memberships, roles, subject, userId);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+     if (this == obj) {
+       return true;
+     } else if (obj == null) {
+       return false;
+     } else if (getClass() != obj.getClass()) {
+       return false;
+     } else {
+       Identity other = (Identity) obj;
+       return Objects.equals(memberships, other.memberships) && Objects.equals(roles, other.roles)
+              && Objects.equals(subject, other.subject)
+              && Objects.equals(userId, other.userId);
+     }
+   }
+
+   @Override
+   public String toString() {
+     return "Identity [userId=" + userId + ", memberships=" + memberships + ", roles=" + roles + "]";
+   }
+
 }

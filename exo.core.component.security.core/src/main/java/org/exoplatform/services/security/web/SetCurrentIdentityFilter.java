@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.security.web;
 
+import java.io.IOException;
+
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.web.AbstractFilter;
@@ -31,177 +33,128 @@ import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.IdentityRegistry;
 import org.exoplatform.services.security.StateKey;
 
-import java.io.IOException;
-
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-public class SetCurrentIdentityFilter extends AbstractFilter
-{
+public class SetCurrentIdentityFilter extends AbstractFilter {
 
-   private boolean restoreIdentity;
+  private static final Log     LOG = ExoLogger.getLogger("exo.core.component.security.core.SetCurrentIdentityFilter");
 
-   /**
-    * Logger.
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.core.component.security.core.SetCurrentIdentityFilter");
+  private ConversationRegistry conversationRegistry;
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void afterInit(FilterConfig config) throws ServletException
-   {
-      super.afterInit(config);
-      restoreIdentity = Boolean.parseBoolean(config.getInitParameter("restoreIdentity"));
-   }
+  private IdentityRegistry     identityRegistry;
 
-   /**
-    * Set current {@link ConversationState}, if it is not registered yet then
-    * create new one and register in {@link ConversationRegistry}. {@inheritDoc}
-    */
-   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-      ServletException
-   {
+  /**
+   * Set current {@link ConversationState}, if it is not registered yet then
+   * create new one and register in {@link ConversationRegistry}. {@inheritDoc}
+   */
+  public void doFilter(ServletRequest request,
+                       ServletResponse response,
+                       FilterChain chain) throws IOException,
+                                          ServletException {
+    HttpServletRequest httpRequest = (HttpServletRequest) request;
+    ExoContainer container = getContainer();
 
-      HttpServletRequest httpRequest = (HttpServletRequest)request;
-      ExoContainer container = getContainer();
-
-      try
-      {
-         ExoContainerContext.setCurrentContainer(container);
-         ConversationState state = getCurrentState(container, httpRequest);
-         ConversationState.setCurrent(state);
-         chain.doFilter(request, response);
+    try {
+      ExoContainerContext.setCurrentContainer(container);
+      ConversationState state = getCurrentState(container, httpRequest);
+      ConversationState.setCurrent(state);
+      chain.doFilter(request, response);
+    } finally {
+      try {
+        ConversationState.setCurrent(null);
+      } catch (Exception e) {
+        LOG.warn("An error occured while cleaning the ThreadLocal", e);
       }
-      finally
-      {
-         try
-         {
-            ConversationState.setCurrent(null);
-         }
-         catch (Exception e)
-         {
-            LOG.warn("An error occured while cleaning the ThreadLocal", e);
-         }
-         try
-         {
-            ExoContainerContext.setCurrentContainer(null);
-         }
-         catch (Exception e)
-         {
-            LOG.warn("An error occured while cleaning the ThreadLocal", e);
-         }
+      try {
+        ExoContainerContext.setCurrentContainer(null);
+      } catch (Exception e) {
+        LOG.warn("An error occured while cleaning the ThreadLocal", e);
       }
-   }
+    }
+  }
 
-   /**
-    * Gives the current state
-    */
-   private ConversationState getCurrentState(ExoContainer container, HttpServletRequest httpRequest)
-   {
-      ConversationRegistry conversationRegistry =
-         (ConversationRegistry)container.getComponentInstanceOfType(ConversationRegistry.class);
+  /**
+   * Gives the current state
+   */
+  private ConversationState getCurrentState(ExoContainer container, HttpServletRequest httpRequest) {
+    ConversationState state = null;
+    String userId = httpRequest.getRemoteUser();
 
-      IdentityRegistry identityRegistry =
-         (IdentityRegistry)container.getComponentInstanceOfType(IdentityRegistry.class);
+    // only if user authenticated, otherwise there is no reason to do anythings
+    if (userId != null) {
+      HttpSession httpSession = httpRequest.getSession();
+      StateKey stateKey = new HttpSessionStateKey(httpSession);
 
-      ConversationState state = null;
-      String userId = httpRequest.getRemoteUser();
-
-      // only if user authenticated, otherwise there is no reason to do anythings
-      if (userId != null)
-      {
-         HttpSession httpSession = httpRequest.getSession();
-         StateKey stateKey = new HttpSessionStateKey(httpSession);
-
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("Looking for Conversation State " + httpSession.getId());
-         }
-
-         state = conversationRegistry.getState(stateKey);
-
-         if(state != null && !userId.equals(state.getIdentity().getUserId())){
-             state = null;
-             conversationRegistry.unregister(stateKey, false);
-             LOG.debug("The current conversation state with the session ID " + httpSession.getId() + " does not belong to the user " + userId + ". The conversation state registry will be updated.");
-         }
-
-         if (state == null)
-         {
-            if (LOG.isDebugEnabled())
-            {
-               LOG.debug("Conversation State not found, try create new one.");
-            }
-
-            Identity identity = identityRegistry.getIdentity(userId);
-            if (identity != null)
-            {
-               state = new ConversationState(identity);
-               // Keep subject as attribute in ConversationState.
-               state.setAttribute(ConversationState.SUBJECT, identity.getSubject());
-            }
-            else
-            {
-               if (restoreIdentity)
-               {
-                  if (LOG.isDebugEnabled())
-                  {
-                     LOG.debug("Not found identity for " + userId + " try to restore it. ");
-                  }
-
-                  Authenticator authenticator =
-                     (Authenticator)container.getComponentInstanceOfType(Authenticator.class);
-                  try
-                  {
-                     identity = authenticator.createIdentity(userId);
-                     identityRegistry.register(identity);
-                  }
-                  catch (Exception e)
-                  {
-                     LOG.error("Unable restore identity. " + e.getMessage(), e);
-                  }
-
-                  if (identity != null)
-                  {
-                     state = new ConversationState(identity);
-                  }
-               }
-               else
-               {
-                  LOG.error("Not found identity in IdentityRegistry for user " + userId + ", check Login Module.");
-               }
-            }
-
-            if (state != null)
-            {
-               conversationRegistry.register(stateKey, state);
-               if (LOG.isDebugEnabled())
-               {
-                  LOG.debug("Register Conversation state " + httpSession.getId());
-               }
-            }
-         }
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Looking for Conversation State " + httpSession.getId());
       }
-      else
-      {
-         state = new ConversationState(new Identity(IdentityConstants.ANONIM));
+
+      state = getConversationRegistry(container).getState(stateKey);
+
+      if (state != null && !userId.equals(state.getIdentity().getUserId())) {
+        state = null;
+        getConversationRegistry(container).unregister(stateKey, false);
+        LOG.debug("The current conversation state with the session ID " + httpSession.getId() + " does not belong to the user " +
+            userId + ". The conversation state registry will be updated.");
       }
-      return state;
-   }
 
-   /**
-    * {@inheritDoc}
-    */
-   public void destroy()
-   {
-      // nothing to do.
-   }
+      if (state == null) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Conversation State not found, try create new one.");
+        }
 
+        Identity identity = getIdentityRegistry(container).getIdentity(userId);
+        if (identity != null) {
+          state = new ConversationState(identity);
+          // Keep subject as attribute in ConversationState.
+          state.setAttribute(ConversationState.SUBJECT, identity.getSubject());
+        } else {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Not found identity for " + userId + " try to restore it. ");
+          }
+
+          Authenticator authenticator = container.getComponentInstanceOfType(Authenticator.class);
+          try {
+            identity = authenticator.createIdentity(userId);
+            getIdentityRegistry(container).register(identity);
+          } catch (Exception e) {
+            LOG.error("Unable restore identity. " + e.getMessage(), e);
+          }
+
+          if (identity != null) {
+            state = new ConversationState(identity);
+          }
+        }
+
+        if (state != null) {
+          getConversationRegistry(container).register(stateKey, state);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Register Conversation state " + httpSession.getId());
+          }
+        }
+      }
+    } else {
+      state = new ConversationState(new Identity(IdentityConstants.ANONIM));
+    }
+    return state;
+  }
+
+  public ConversationRegistry getConversationRegistry(ExoContainer container) {
+    if (conversationRegistry == null) {
+      conversationRegistry = container.getComponentInstanceOfType(ConversationRegistry.class);
+    }
+    return conversationRegistry;
+  }
+
+  public IdentityRegistry getIdentityRegistry(ExoContainer container) {
+    if (identityRegistry == null) {
+      identityRegistry = container.getComponentInstanceOfType(IdentityRegistry.class);
+    }
+    return identityRegistry;
+  }
 }
