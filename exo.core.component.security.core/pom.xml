@@ -47,6 +47,10 @@
       </dependency>
       <dependency>
          <groupId>io.meeds.kernel</groupId>
+         <artifactId>exo.kernel.component.cache</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>io.meeds.kernel</groupId>
          <artifactId>exo.kernel.commons.test</artifactId>
          <scope>test</scope>
       </dependency>
