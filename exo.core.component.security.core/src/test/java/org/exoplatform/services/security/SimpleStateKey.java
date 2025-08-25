@@ -18,28 +18,26 @@
  */
 package org.exoplatform.services.security;
 
-public final class SimpleStateKey implements StateKey
-{
+public final class SimpleStateKey implements StateKey {
 
-   private final String str;
+  private static final long serialVersionUID = -4390844600172144821L;
 
-   public SimpleStateKey(String str)
-   {
-      this.str = str;
-   }
+  private final String      str;
 
-   public boolean equals(Object obj)
-   {
-      if (obj == null)
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      return str.equals(((SimpleStateKey)obj).str);
-   }
+  public SimpleStateKey(String str) {
+    this.str = str;
+  }
 
-   public int hashCode()
-   {
-      return str.hashCode();
-   }
+  public boolean equals(Object obj) {
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    return str.equals(((SimpleStateKey) obj).str);
+  }
+
+  public int hashCode() {
+    return str.hashCode();
+  }
 
 }

@@ -23,6 +23,7 @@ import org.exoplatform.container.component.ThreadContextHolder;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -39,7 +40,7 @@ public class ConversationState implements ThreadContextHolder
    /**
     * ThreadLocal keeper for ConversationState.
     */
-   private static ThreadLocal<ConversationState> current = new ThreadLocal<ConversationState>();
+   private static ThreadLocal<ConversationState> current = new ThreadLocal<>();
 
    /**
     * See {@link Identity}.
@@ -54,7 +55,7 @@ public class ConversationState implements ThreadContextHolder
    public ConversationState(Identity identity)
    {
       this.identity = identity;
-      this.attributes = new HashMap<String, Object>();
+      this.attributes = new HashMap<>();
    }
 
    /**
@@ -72,7 +73,11 @@ public class ConversationState implements ThreadContextHolder
     */
    public static void setCurrent(ConversationState state)
    {
-      current.set(state);
+      if (state == null) {
+        current.remove();
+      } else {
+        current.set(state);
+      }
    }
 
    /**
@@ -130,5 +135,29 @@ public class ConversationState implements ThreadContextHolder
    {
       return new ThreadContext(current);
    }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(attributes, identity);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj == null) {
+      return false;
+    } else if (getClass() != obj.getClass()) {
+      return false;
+    } else {
+      ConversationState other = (ConversationState) obj;
+      return Objects.equals(attributes, other.attributes) && Objects.equals(identity, other.identity);
+    }
+  }
+
+  @Override
+  public String toString() {
+    return "ConversationState [identity=" + identity + ", attributes=" + attributes + "]";
+  }
 
 }

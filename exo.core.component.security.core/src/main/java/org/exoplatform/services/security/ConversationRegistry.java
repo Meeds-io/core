@@ -18,227 +18,177 @@
  */
 package org.exoplatform.services.security;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.exoplatform.container.spi.DefinitionByType;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ValueParam;
+
+import org.exoplatform.services.cache.CacheService;
+import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * In-memory registry of user's sessions
  */
-@DefinitionByType
-public final class ConversationRegistry
-{
+public final class ConversationRegistry {
 
-   /**
-    * "concurrency-level".
-    */
-   public static final String INIT_PARAM_CONCURRENCY_LEVEL = "concurrency-level";
+  private static final String                         CACHE_NAME      = "portal.ConversationRegistry";
 
-   /**
-    * Logger.
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.core.component.security.core.ConversationRegistry");
+  private static final String                         STATE_KEYS_NAME = "portal.ConversationRegistryStates";
 
-   /**
-    * Default concurrency level.
-    */
-   private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+  private static final Log                            LOG             = ExoLogger.getLogger(ConversationRegistry.class);
 
-   /**
-    * Storage for ConversationStates.
-    */
-   private final ConcurrentHashMap<StateKey, ConversationState> states;
+  private final ExoCache<StateKey, ConversationState> statesCache;
 
-   /**
-    * @see {@link IdentityRegistry}
-    */
-   private final IdentityRegistry identityRegistry;
+  private final ExoCache<String, Set<StateKey>>       stateKeysCache;
 
-   /**
-    * @see {@link ListenerService}
-    */
-   private final ListenerService listenerService;
+  private final IdentityRegistry                      identityRegistry;
 
-   /**
-    * @param params
-    * @param identityRegistry {@link IdentityRegistry}
-    * @param listenerService {@link ListenerService}
-    */
-   public ConversationRegistry(InitParams params, IdentityRegistry identityRegistry, ListenerService listenerService)
-   {
-      this(parse(params), identityRegistry, listenerService);
-   }
+  private final ListenerService                       listenerService;
 
-   private static int parse(InitParams ip)
-   {
-      try
-      {
-         if (ip != null)
-         {
-            ValueParam concurrencyLevel = ip.getValueParam(INIT_PARAM_CONCURRENCY_LEVEL);
+  public ConversationRegistry(IdentityRegistry identityRegistry,
+                              ListenerService listenerService,
+                              CacheService cacheService) {
+    this.statesCache = cacheService.getCacheInstance(CACHE_NAME);
+    this.stateKeysCache = cacheService.getCacheInstance(STATE_KEYS_NAME);
+    this.identityRegistry = identityRegistry;
+    this.listenerService = listenerService;
+  }
 
-            if (concurrencyLevel != null)
-            {
-               return Integer.valueOf(concurrencyLevel.getValue());
-            }
-         }
+  /**
+   * Get ConversationState with specified key.
+   * 
+   * @param key the key.
+   * @return ConversationState.
+   */
+  public ConversationState getState(StateKey key) {
+    return statesCache.get(key);
+  }
 
-         return DEFAULT_CONCURRENCY_LEVEL;
+  /**
+   * Sets the user's session to the registry and broadcasts ADD_SESSION_EVENT
+   * message to interested listeners.
+   * 
+   * @param key the session identifier.
+   * @param state the conversation state.
+   */
+  public void register(StateKey key, ConversationState state) {
+    String userId = state.getIdentity().getUserId();
+    // We will broadcast login event if :
+    // 1- session is not already registered -> session ID is not in the states
+    // map keys
+    // 2- user is not already logged-in (there is no registered state with the
+    // same userID)
+    boolean broadcast = statesCache.get(key) == null && StringUtils.isNotBlank(userId) && getStateKeys(userId).isEmpty();
+    statesCache.put(key, state);
+    addStateKey(userId, key);
+    if (broadcast) { // NOSONAR
+      try {
+        listenerService.broadcast("exo.core.security.ConversationRegistry.register", this, state);
+      } catch (Exception e) {
+        LOG.error("Broadcast message filed ", e);
       }
-      catch (NumberFormatException e)
-      {
-         LOG.error("Can't parse parameter " + INIT_PARAM_CONCURRENCY_LEVEL, e);
-         return DEFAULT_CONCURRENCY_LEVEL;
-      }
-   }
+    }
+  }
 
-   /**
-    * @param concurrencyLevel the estimated number of concurrently updating
-    *          threads. The implementation performs internal sizing
-    * @param identityRegistry @see {@link IdentityRegistry}
-    * @param listenerService @see {@link ListenerService}
-    */
-   private ConversationRegistry(int concurrencyLevel, IdentityRegistry identityRegistry, ListenerService listenerService)
-   {
-      this.states = new ConcurrentHashMap<StateKey, ConversationState>(concurrencyLevel, 0.75f, concurrencyLevel);
-      this.identityRegistry = identityRegistry;
-      this.listenerService = listenerService;
-   }
+  /**
+   * Remove ConversationStae with specified key. If there is no more
+   * ConversationState for user then remove Identity from IdentityRegistry.
+   * 
+   * @param key the key.
+   * @return removed ConversationState or null.
+   */
+  public ConversationState unregister(StateKey key) {
+    return unregister(key, true);
+  }
 
-   /**
-    * Get ConversationState with specified key.
-    * 
-    * @param key the key.
-    * @return ConversationState.
-    */
-   public ConversationState getState(StateKey key)
-   {
-      return states.get(key);
-   }
-
-   /**
-    * Sets the user's session to the registry and broadcasts ADD_SESSION_EVENT
-    * message to interested listeners.
-    * 
-    * @param key the session identifier.
-    * @param state the conversation state.
-    */
-   public void register(StateKey key, ConversationState state)
-   {
+  /**
+   * Remove ConversationState with specified key. If there is no more
+   * ConversationState for user and <code>unregisterIdentity</code> is true then
+   * remove Identity from IdentityRegistry.
+   * 
+   * @param key the key.
+   * @param unregisterIdentity if true and no more ConversationStates for user
+   *          then unregister Identity
+   * @return removed ConversationState or null.
+   */
+  public ConversationState unregister(StateKey key, boolean unregisterIdentity) {
+    ConversationState state = statesCache.remove(key);
+    if (state != null) {
       String userId = state.getIdentity().getUserId();
-      // We will broadcast login event if :
-      // 1- session is not already registered -> session ID is not in the states map keys
-      // 2- user is not already logged-in (there is no registered state with the same userID)
-      boolean broadcast = states.get(key) == null && StringUtils.isNotBlank(userId) && getStateKeys(userId).isEmpty();
-      states.put(key, state);
-      if (broadcast) {
-         try {
-            listenerService.broadcast("exo.core.security.ConversationRegistry.register", this, state);
-         } catch (Exception e) {
-            LOG.error("Broadcast message filed ", e);
-         }
+      removeStateKey(userId, key);
+      if (unregisterIdentity && CollectionUtils.isEmpty(stateKeysCache.get(userId))) {
+        identityRegistry.unregister(userId);
       }
-   }
-
-   /**
-    * Remove ConversationStae with specified key. If there is no more
-    * ConversationState for user then remove Identity from IdentityRegistry.
-    * 
-    * @param key the key.
-    * @return removed ConversationState or null.
-    */
-   public ConversationState unregister(StateKey key)
-   {
-      return unregister(key, true);
-   }
-
-   /**
-    * Remove ConversationState with specified key. If there is no more
-    * ConversationState for user and <code>unregisterIdentity</code> is true then
-    * remove Identity from IdentityRegistry.
-    * 
-    * @param key the key.
-    * @param unregisterIdentity if true and no more ConversationStates for user
-    *          then unregister Identity
-    * @return removed ConversationState or null.
-    */
-   public ConversationState unregister(StateKey key, boolean unregisterIdentity)
-   {
-      ConversationState state = states.remove(key);
-
-      if (state == null)
-         return null;
-
-      String userId = state.getIdentity().getUserId();
-
-      List<StateKey> keys = getStateKeys(userId);
-      if (unregisterIdentity && keys.size() == 0)
-      {
-         identityRegistry.unregister(userId);
+      try {
+        listenerService.broadcast("exo.core.security.ConversationRegistry.unregister", this, state);
+      } catch (Exception e) {
+        LOG.error("Broadcast message filed ", e);
       }
+    }
+    return state;
+  }
 
-      try
-      {
-         listenerService.broadcast("exo.core.security.ConversationRegistry.unregister", this, state);
+  /**
+   * Unregister all conversation states for user with specified Id.
+   * 
+   * @param userId user Id
+   * @return set of unregistered conversation states
+   */
+  public List<ConversationState> unregisterByUserId(String userId) {
+    List<ConversationState> states = new ArrayList<>();
+    Set<StateKey> stateKeys = stateKeysCache.get(userId);
+    if (stateKeys != null) {
+      stateKeys = new HashSet<>(stateKeys); // Avoid ConcurrentModificationException
+      for (StateKey key : stateKeys) {
+        ConversationState state = unregister(key, false);
+        if (state != null) {
+          states.add(state);
+        }
       }
-      catch (Exception e)
-      {
-         LOG.error("Broadcast message filed ", e);
+    }
+    return states;
+  }
+
+  /**
+   * @param userId the user's identifier.
+   * @return list of users ConversationState.
+   */
+  public List<StateKey> getStateKeys(String userId) {
+    return stateKeysCache.get(userId) == null ? Collections.emptyList(): new ArrayList<>(stateKeysCache.get(userId));
+  }
+
+  /**
+   * Remove all ConversationStates.
+   */
+  void clear() {
+    statesCache.clearCache();
+    stateKeysCache.clearCache();
+  }
+
+  private void removeStateKey(String userId, StateKey key) {
+    Set<StateKey> stateKeys = stateKeysCache.get(userId);
+    if (stateKeys != null) {
+      stateKeys.remove(key);
+      if (stateKeys.isEmpty()) {
+        stateKeysCache.remove(userId);
       }
+    }
+  }
 
-      return state;
-   }
-
-   /**
-    * Unregister all conversation states for user with specified Id.
-    * 
-    * @param userId user Id
-    * @return set of unregistered conversation states
-    */
-   public List<ConversationState> unregisterByUserId(String userId)
-   {
-      List<ConversationState> states = new ArrayList<ConversationState>();
-      for (StateKey key : getStateKeys(userId))
-      {
-         ConversationState state = unregister(key, false);
-         if (state != null)
-         {
-            states.add(state);
-         }
-      }
-      return states;
-   }
-
-   /**
-    * @param userId the user's identifier.
-    * @return list of users ConversationState.
-    */
-   public List<StateKey> getStateKeys(String userId)
-   {
-      ArrayList<StateKey> s = new ArrayList<StateKey>();
-      for (Map.Entry<StateKey, ConversationState> a : states.entrySet())
-      {
-         if (a.getValue().getIdentity().getUserId().equals(userId))
-            s.add(a.getKey());
-      }
-      return s;
-   }
-
-   /**
-    * Remove all ConversationStates.
-    */
-   void clear()
-   {
-      states.clear();
-   }
+  private void addStateKey(String userId, StateKey key) {
+    Set<StateKey> states = stateKeysCache.get(userId);
+    if (states == null) {
+      states = Collections.synchronizedSet(new HashSet<>());
+    }
+    states.add(key);
+    stateKeysCache.put(userId, states);
+  }
 
 }
