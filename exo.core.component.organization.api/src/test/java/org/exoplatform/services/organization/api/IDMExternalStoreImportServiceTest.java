@@ -19,12 +19,15 @@
 package org.exoplatform.services.organization.api;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.exoplatform.services.organization.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,10 +37,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.listener.ListenerService;
-import org.exoplatform.services.organization.BaseOrganizationService;
-import org.exoplatform.services.organization.OrganizationService;
-import org.exoplatform.services.organization.UserProfile;
-import org.exoplatform.services.organization.UserProfileHandler;
 import org.exoplatform.services.organization.externalstore.IDMExternalStoreImportService;
 import org.exoplatform.services.organization.externalstore.IDMExternalStoreService;
 import org.exoplatform.services.organization.externalstore.model.IDMEntityType;
@@ -70,12 +69,14 @@ public class IDMExternalStoreImportServiceTest {
     StandaloneContainer.addConfigurationURL(containerConf);
     StandaloneContainer container = StandaloneContainer.getInstance();
 
-    organizationService =
-                        (BaseOrganizationService) container.getComponentInstance(org.exoplatform.services.organization.OrganizationService.class);
-    assertNotNull(organizationService);
+    organizationService = mock(OrganizationService.class);
+    UserHandler userHandler = mock(UserHandler.class);
+    when(organizationService.getUserHandler()).thenReturn(userHandler);
 
-    profileHandler = organizationService.getUserProfileHandler();
-    this.idmExternalStoreImportService = new IDMExternalStoreImportService(container,
+    profileHandler = mock(UserProfileHandler.class);
+    when(organizationService.getUserProfileHandler()).thenReturn(profileHandler);
+
+    this.idmExternalStoreImportService = new IDMExternalStoreImportService(null,
                                                                            organizationService,
                                                                            listenerService,
                                                                            idmExternalStoreService,
@@ -131,6 +132,23 @@ public class IDMExternalStoreImportServiceTest {
     verify(listenerService, atLeast(1)).broadcast(eq(IDMExternalStoreService.USER_PROFILE_ADDED_FROM_EXTERNAL_STORE),
                                                   anyObject(),
                                                   argThat(param -> param instanceof HashMap<?, ?>));
+  }
+
+  @Test
+  public void skipUserCreationWhenUsernameContainsWhitespace() throws Exception {
+    String usernameWithSpace = "john doe";
+
+    Method importUserMethod = IDMExternalStoreImportService.class.getDeclaredMethod("importUser",
+                                                                                    String.class,
+                                                                                    boolean.class,
+                                                                                    boolean.class,
+                                                                                    boolean.class);
+    importUserMethod.setAccessible(true);
+
+    Object result = importUserMethod.invoke(idmExternalStoreImportService, usernameWithSpace, false, true, true);
+
+    assertNull(result);
+    verify(organizationService.getUserHandler(), never()).createUser(any(User.class), anyBoolean());
   }
 
 }
