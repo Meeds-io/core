@@ -23,7 +23,6 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.organization.impl.UserImpl;
 import org.picocontainer.Startable;
 
@@ -851,6 +850,11 @@ public class IDMExternalStoreImportService implements Startable {
 
     boolean isModified = false;
     if (isNew) {
+      // Reject usernames containing whitespace before creating the user
+      if (username == null || containsWhitespace(username)) {
+        LOG.warn("Skipping creation of external user '{}': username contains whitespace", username);
+        return null;
+      }
       User externalUser = externalStoreService.getEntity(IDMEntityType.USER, username);
       externalUser.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
 
@@ -1076,5 +1080,11 @@ public class IDMExternalStoreImportService implements Startable {
 
   public void setDeleteMissingEntriesFromInternalStore(boolean deleteMissingEntriesFromInternalStore) {
     this.deleteMissingEntriesFromInternalStore = deleteMissingEntriesFromInternalStore;
+  }
+
+  private boolean containsWhitespace(String username) {
+    if (username == null || username.isEmpty())
+      return false;
+    return username.codePoints().anyMatch(Character::isWhitespace);
   }
 }
