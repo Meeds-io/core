@@ -68,6 +68,10 @@ public class MembershipUpdateListener extends MembershipEventListener
       for (StateKey key : conversationRegistry.getStateKeys(userId))
       {
          ConversationState cstate = conversationRegistry.getState(key);
+         if (cstate == null) {
+           conversationRegistry.unregister(key);
+           continue;
+         }
          Identity identity = cstate.getIdentity();
          Iterator<MembershipEntry> iter = identity.getMemberships().iterator();
          while (iter.hasNext())
@@ -96,6 +100,10 @@ public class MembershipUpdateListener extends MembershipEventListener
       for (StateKey key : conversationRegistry.getStateKeys(userId))
       {
          ConversationState cstate = conversationRegistry.getState(key);
+         if (cstate == null) {
+           conversationRegistry.unregister(key);
+           continue;
+         }
          Identity identity = cstate.getIdentity();
          Iterator<MembershipEntry> iter = identity.getMemberships().iterator();
          boolean contains = false;
