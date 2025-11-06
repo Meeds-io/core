@@ -850,9 +850,28 @@ public class IDMExternalStoreImportService implements Startable {
 
     boolean isModified = false;
     if (isNew) {
-      // Reject usernames containing whitespace before creating the user
-      if (username == null || containsWhitespace(username)) {
-        LOG.warn("Skipping creation of external user '{}': username contains whitespace", username);
+      // Reject usernames containing whitespace or apostrophe before creating the user
+      if (username == null || username.isEmpty()) {
+        LOG.warn("Skipping creation of external user: username is null");
+        return null;
+      }
+
+      boolean hasWhitespace = containsWhitespace(username);
+      boolean hasApostrophe = containsApostrophe(username);
+
+      if (hasWhitespace || hasApostrophe) {
+        StringBuilder reason = new StringBuilder();
+        if (hasWhitespace) {
+          reason.append("whitespace");
+        }
+        if (hasApostrophe) {
+          if (reason.length() > 0) {
+            reason.append(" and ");
+          }
+          reason.append("apostrophe");
+        }
+
+        LOG.warn("Skipping creation of external user '{}': username contains {}", username, reason);
         return null;
       }
       User externalUser = externalStoreService.getEntity(IDMEntityType.USER, username);
@@ -1083,8 +1102,10 @@ public class IDMExternalStoreImportService implements Startable {
   }
 
   private boolean containsWhitespace(String username) {
-    if (username == null || username.isEmpty())
-      return false;
     return username.codePoints().anyMatch(Character::isWhitespace);
+  }
+
+  private boolean containsApostrophe(String username) {
+    return username.indexOf('\'') >= 0;
   }
 }
