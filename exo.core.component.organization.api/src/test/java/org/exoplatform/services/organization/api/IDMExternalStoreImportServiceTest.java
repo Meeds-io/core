@@ -151,4 +151,38 @@ public class IDMExternalStoreImportServiceTest {
     verify(organizationService.getUserHandler(), never()).createUser(any(User.class), anyBoolean());
   }
 
+  @Test
+  public void skipUserCreationWhenUsernameContainsApostrophe() throws Exception {
+    String usernameWithApostrophe = "john's doe";
+
+    Method importUserMethod = IDMExternalStoreImportService.class.getDeclaredMethod("importUser",
+            String.class,
+            boolean.class,
+            boolean.class,
+            boolean.class);
+    importUserMethod.setAccessible(true);
+
+    Object result = importUserMethod.invoke(idmExternalStoreImportService, usernameWithApostrophe, false, true, true);
+
+    assertNull(result);
+    verify(organizationService.getUserHandler(), never()).createUser(any(User.class), anyBoolean());
+  }
+
+  @Test
+  public void skipUserCreationWhenUsernameIsEmpty() throws Exception {
+    String usernameEmpty = "";
+
+    Method importUserMethod = IDMExternalStoreImportService.class.getDeclaredMethod("importUser",
+            String.class,
+            boolean.class,
+            boolean.class,
+            boolean.class);
+    importUserMethod.setAccessible(true);
+
+    Object result = importUserMethod.invoke(idmExternalStoreImportService, usernameEmpty, false, true, true);
+
+    assertNull(result);
+    verify(organizationService.getUserHandler(), never()).createUser(any(User.class), anyBoolean());
+  }
+
 }
