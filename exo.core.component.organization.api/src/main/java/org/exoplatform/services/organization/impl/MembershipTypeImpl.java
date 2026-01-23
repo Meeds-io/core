@@ -32,129 +32,102 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Table(name = "EXO_MEMBERSHIP_TYPE")
-public class MembershipTypeImpl implements MembershipType, ExtendedCloneable
-{
+public class MembershipTypeImpl implements MembershipType, ExtendedCloneable {
   private static final long serialVersionUID = -8441178538275068955L;
 
-  @Id
-   private String name;
+  private String name;
 
-   @Column
-   private String description;
+  private String description;
 
-   @Column
-   private String owner;
+  private String owner;
 
-   @Column
-   private Date createdDate;
+  private Date createdDate;
 
-   @Column
-   private Date modifiedDate;
+  private Date modifiedDate;
 
-   public MembershipTypeImpl()
-   {
-   }
+  public MembershipTypeImpl() {
+  }
 
-   public MembershipTypeImpl(String name, String owner, String desc)
-   {
-      this.name = name;
-      this.owner = owner;
-      this.description = desc;
-   }
+  public MembershipTypeImpl(String name, String owner, String desc) {
+    this.name = name;
+    this.owner = owner;
+    this.description = desc;
+  }
 
-   public String getName()
-   {
-      return name;
-   }
+  public String getName() {
+    return name;
+  }
 
-   public void setName(String s)
-   {
-      name = s;
-   }
+  public void setName(String s) {
+    name = s;
+  }
 
-   public String getDescription()
-   {
-      return description;
-   }
+  public String getDescription() {
+    return description;
+  }
 
-   public void setDescription(String s)
-   {
-      description = s;
-   }
+  public void setDescription(String s) {
+    description = s;
+  }
 
-   public String getOwner()
-   {
-      return owner;
-   }
+  public String getOwner() {
+    return owner;
+  }
 
-   public void setOwner(String s)
-   {
-      owner = s;
-   }
+  public void setOwner(String s) {
+    owner = s;
+  }
 
-   public Date getCreatedDate()
-   {
-      return createdDate;
-   }
+  public Date getCreatedDate() {
+    return createdDate;
+  }
 
-   public void setCreatedDate(Date d)
-   {
-      createdDate = d;
-   }
+  public void setCreatedDate(Date d) {
+    createdDate = d;
+  }
 
-   public Date getModifiedDate()
-   {
-      return modifiedDate;
-   }
+  public Date getModifiedDate() {
+    return modifiedDate;
+  }
 
-   public void setModifiedDate(Date d)
-   {
-      modifiedDate = d;
-   }
+  public void setModifiedDate(Date d) {
+    modifiedDate = d;
+  }
 
-   /**
-    * {@inheritDoc}
-    **/
-   public MembershipTypeImpl clone()
-   {
-      MembershipTypeImpl mti;
-      try
-      {
-         mti = (MembershipTypeImpl)super.clone();
-         if (createdDate != null)
-         {
-            mti.createdDate = (Date)createdDate.clone();
-         }
-         if (modifiedDate != null)
-         {
-            mti.modifiedDate = (Date)modifiedDate.clone();
-         }
+  /**
+   * {@inheritDoc}
+   **/
+  public MembershipTypeImpl clone() {
+    MembershipTypeImpl mti;
+    try {
+      mti = (MembershipTypeImpl) super.clone();
+      if (createdDate != null) {
+        mti.createdDate = (Date) createdDate.clone();
       }
-      catch (CloneNotSupportedException e)
-      {
-         return this;
+      if (modifiedDate != null) {
+        mti.modifiedDate = (Date) modifiedDate.clone();
       }
-
-      return mti;
-   }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MembershipTypeImpl that = (MembershipTypeImpl) o;
-        return Objects.equals(name, that.name) &&
-                Objects.equals(description, that.description) &&
-                Objects.equals(owner, that.owner) &&
-                Objects.equals(createdDate, that.createdDate) &&
-                Objects.equals(modifiedDate, that.modifiedDate);
+    } catch (CloneNotSupportedException e) {
+      return this;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, description, owner, createdDate, modifiedDate);
-    }
+    return mti;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    MembershipTypeImpl that = (MembershipTypeImpl) o;
+    return Objects.equals(name, that.name) &&
+            Objects.equals(description, that.description) &&
+            Objects.equals(owner, that.owner) &&
+            Objects.equals(createdDate, that.createdDate) &&
+            Objects.equals(modifiedDate, that.modifiedDate);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, description, owner, createdDate, modifiedDate);
+  }
 }
