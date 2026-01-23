@@ -21,6 +21,7 @@ package org.exoplatform.services.organization.cache;
 import org.exoplatform.services.organization.Membership;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Will be used as key for cacheMembership.
@@ -39,28 +40,31 @@ public class MembershipCacheKey implements Serializable {
 
   private final int         hashcode;
 
+  private final boolean     includesInherited;
+
   public MembershipCacheKey(String userName, String groupId, String type) {
     this.userName = userName;
     this.groupId = groupId;
     this.type = type;
+    this.includesInherited = false;
+    hashcode = Objects.hash(this.userName, this.groupId, this.type, this.includesInherited);
+  }
 
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
-    hashcode = prime * result + ((userName == null) ? 0 : userName.hashCode());
+  public MembershipCacheKey(String userName, String groupId, String type, boolean includesInherited) {
+    this.userName = userName;
+    this.groupId = groupId;
+    this.type = type;
+    this.includesInherited = includesInherited;
+    hashcode = Objects.hash(this.userName, this.groupId, this.type, this.includesInherited);
+
   }
 
   public MembershipCacheKey(Membership m) {
     this.userName = m.getUserName();
     this.groupId = m.getGroupId();
     this.type = m.getMembershipType();
-
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
-    hashcode = prime * result + ((userName == null) ? 0 : userName.hashCode());
+    this.includesInherited = false;
+    hashcode = Objects.hash(this.userName, this.groupId, this.type, this.includesInherited);
   }
 
   public String getGroupId() {
@@ -73,6 +77,10 @@ public class MembershipCacheKey implements Serializable {
 
   public String getUserName() {
     return userName;
+  }
+
+  public boolean isIncludesInherited() {
+    return includesInherited;
   }
 
   @Override
@@ -103,7 +111,9 @@ public class MembershipCacheKey implements Serializable {
       if (other.userName != null)
         return false;
     } else if (!userName.equals(other.userName))
-      return false;
+    if (includesInherited != other.isIncludesInherited()) {
+        return false;
+    }
     return true;
   }
 

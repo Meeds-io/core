@@ -108,4 +108,25 @@ public class GroupEventListener extends BaseComponentPlugin
    public void postDelete(Group group) throws Exception
    {
    }
+
+   /**
+    * Called after a member group has been linked to a parent group.
+    *
+    * @param group the group that contains the member group
+    * @param memberGroup the group that has been added as a member
+    * @throws Exception if the implementation decides to throw an error
+    */
+   public void linkGroups(Group group, Group memberGroup) throws Exception {
+   }
+
+   /**
+    * Called after a member group has been unlinked (removed) from a parent group.
+    *
+    * @param group the group that contained the member group
+    * @param memberGroup the group that has been removed
+    * @throws Exception if the implementation decides to throw an error
+    */
+   public void unlinkGroups(Group group, Group memberGroup) throws Exception {
+   }
+
 }

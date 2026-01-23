@@ -31,103 +31,92 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Table(name = "EXO_MEMBERSHIP")
-public class MembershipImpl implements Membership, ExtendedCloneable
-{
+public class MembershipImpl implements Membership, ExtendedCloneable {
   private static final long serialVersionUID = 3393494689182081442L;
 
-  @Id
-   private String id = null;
+  private String id = null;
 
-   @Column
-   private String membershipType = "member";
+  private String membershipType = "member";
 
-   @Column
-   private String userName = null;
+  private String userName = null;
 
-   @Column
-   private String groupId = null;
+  private String groupId = null;
 
-   public MembershipImpl()
-   {
-   }
+  private boolean isInherited;
 
-   public String getId()
-   {
-      return id;
-   }
+  public MembershipImpl() {
+  }
 
-   public void setId(String id)
-   {
-      this.id = id;
-   }
+  public String getId() {
+    return id;
+  }
 
-   public String getMembershipType()
-   {
-      return membershipType;
-   }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-   public void setMembershipType(String type)
-   {
-      this.membershipType = type;
-   }
+  public String getMembershipType() {
+    return membershipType;
+  }
 
-   public String getUserName()
-   {
-      return userName;
-   }
+  public void setMembershipType(String type) {
+    this.membershipType = type;
+  }
 
-   public void setUserName(String user)
-   {
-      this.userName = user;
-   }
+  public String getUserName() {
+    return userName;
+  }
 
-   public String getGroupId()
-   {
-      return groupId;
-   }
+  public void setUserName(String user) {
+    this.userName = user;
+  }
 
-   public void setGroupId(String group)
-   {
-      this.groupId = group;
-   }
+  public String getGroupId() {
+    return groupId;
+  }
 
-   // toString
-   public String toString()
-   {
-      return "Membership[" + id + "]";
-   }
+  public void setGroupId(String group) {
+    this.groupId = group;
+  }
 
-   /**
-    * {@inheritDoc}
-    **/
-   public MembershipImpl clone()
-   {
-      try
-      {
-         return (MembershipImpl)super.clone();
-      }
-      catch (CloneNotSupportedException e)
-      {
-         return this;
-      }
-   }
+  public boolean isInherited() {
+    return isInherited;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MembershipImpl that = (MembershipImpl) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(membershipType, that.membershipType) &&
-                Objects.equals(userName, that.userName) &&
-                Objects.equals(groupId, that.groupId);
+  public void setInherited(boolean isInherited) {
+    this.isInherited = isInherited;
+  }
+
+  // toString
+  public String toString() {
+    return "Membership[" + id + "]";
+  }
+
+  /**
+   * {@inheritDoc}
+   **/
+  public MembershipImpl clone() {
+    try {
+      return (MembershipImpl) super.clone();
+    } catch (CloneNotSupportedException e) {
+      return this;
     }
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, membershipType, userName, groupId);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    MembershipImpl that = (MembershipImpl) o;
+    return Objects.equals(id, that.id) &&
+            Objects.equals(membershipType, that.membershipType) &&
+            Objects.equals(userName, that.userName) &&
+            Objects.equals(groupId, that.groupId) &&
+            Objects.equals(isInherited, that.isInherited);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, membershipType, userName, groupId);
+  }
 }

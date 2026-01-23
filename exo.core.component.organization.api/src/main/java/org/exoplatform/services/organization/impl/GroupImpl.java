@@ -19,161 +19,148 @@
 package org.exoplatform.services.organization.impl;
 
 import java.util.Objects;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
+import java.util.Set;
 import org.exoplatform.services.organization.ExtendedCloneable;
 import org.exoplatform.services.organization.Group;
 import org.exoplatform.services.organization.OrganizationService;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-@Entity
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Table(name = "EXO_GROUP")
-public class GroupImpl implements Group, ExtendedCloneable
-{
+public class GroupImpl implements Group, ExtendedCloneable {
   private static final long serialVersionUID = -5909516396351606340L;
 
-  @Id
-   private String id;
+  private String id;
 
-   @Column
-   private String parentId;
+  private String parentId;
 
-   @Column
-   private String groupName;
+  private String groupName;
 
-   @Column
-   private String label;
+  private String label;
 
-   @Column(name = "description")
-   private String desc;
+  private String desc;
 
-   @Column(name = "store")
-   private String originatingStore;
+  private String originatingStore;
 
-   public GroupImpl()
-   {
+  private Set<String> inheritedGroups;
 
-   }
+  private Set<String> nestedGroups;
 
-   public GroupImpl(String name)
-   {
-      groupName = name;
-   }
+  public GroupImpl() {
 
-   public String getId()
-   {
-      return id;
-   }
+  }
 
-   public void setId(String id)
-   {
-      this.id = id;
-   }
+  public GroupImpl(String name) {
+    groupName = name;
+  }
 
-   public String getParentId()
-   {
-      return parentId;
-   }
+  public String getId() {
+    return id;
+  }
 
-   public void setParentId(String parentId)
-   {
-      this.parentId = parentId;
-   }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-   public String getGroupName()
-   {
-      return groupName;
-   }
+  public String getParentId() {
+    return parentId;
+  }
 
-   public void setGroupName(String name)
-   {
-      this.groupName = name;
-   }
+  public void setParentId(String parentId) {
+    this.parentId = parentId;
+  }
 
-   public String getLabel()
-   {
-      return label;
-   }
+  public String getGroupName() {
+    return groupName;
+  }
 
-   public void setLabel(String s)
-   {
-      label = s;
-   }
+  public void setGroupName(String name) {
+    this.groupName = name;
+  }
 
-   public String getDescription()
-   {
-      return desc;
-   }
+  public String getLabel() {
+    return label;
+  }
 
-   public void setDescription(String s)
-   {
-      desc = s;
-   }
+  public void setLabel(String s) {
+    label = s;
+  }
 
-   public String toString()
-   {
-      return "Group[" + id + "|" + groupName + "]";
-   }
+  public String getDescription() {
+    return desc;
+  }
 
-   /**
-    * Set originating store name (internal or external)
-    * 
-    * @param originatingStore
-    */
-   public void setOriginatingStore(String originatingStore) {
-     this.originatingStore = originatingStore;
-   }
+  public void setDescription(String s) {
+    desc = s;
+  }
 
-   /**
-    * @return originating store name (internal or external)
-    */
-   public String getOriginatingStore() {
-     return originatingStore;
-   }
+  public Set<String> getInheritedGroups() {
+    return this.inheritedGroups;
+  }
 
-   /**
-    * @return true if the group was initially added to internal store
-    */
-   public boolean isInternalStore() {
-     return originatingStore == null || OrganizationService.INTERNAL_STORE.equals(originatingStore);
-   }
+  public void setInheritedGroups(Set<String> inheritedGroups) {
+    this.inheritedGroups = inheritedGroups;
+  }
 
-   /**
-    * {@inheritDoc}
-    **/
-   public GroupImpl clone()
-   {
-      try
-      {
-         return (GroupImpl)super.clone();
-      }
-      catch (CloneNotSupportedException e)
-      {
-         return this;
-      }
-   }
+  public Set<String> getNestedGroups() {
+    return this.nestedGroups;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        GroupImpl group = (GroupImpl) o;
-        return Objects.equals(id, group.id) &&
-                Objects.equals(parentId, group.parentId) &&
-                Objects.equals(groupName, group.groupName) &&
-                Objects.equals(label, group.label) &&
-                Objects.equals(desc, group.desc);
+  public void setNestedGroups(Set<String> nestedGroups) {
+    this.nestedGroups = nestedGroups;
+  }
+
+  public String toString() {
+    return "Group[" + id + "|" + groupName + "]";
+  }
+
+  /**
+   * Set originating store name (internal or external)
+   *
+   * @param originatingStore
+   */
+  public void setOriginatingStore(String originatingStore) {
+    this.originatingStore = originatingStore;
+  }
+
+  /**
+   * @return originating store name (internal or external)
+   */
+  public String getOriginatingStore() {
+    return originatingStore;
+  }
+
+  /**
+   * @return true if the group was initially added to internal store
+   */
+  public boolean isInternalStore() {
+    return originatingStore == null || OrganizationService.INTERNAL_STORE.equals(originatingStore);
+  }
+
+  /**
+   * {@inheritDoc}
+   **/
+  public GroupImpl clone() {
+    try {
+      return (GroupImpl) super.clone();
+    } catch (CloneNotSupportedException e) {
+      return this;
     }
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, parentId, groupName, label, desc);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    GroupImpl group = (GroupImpl) o;
+    return Objects.equals(id, group.id) &&
+            Objects.equals(parentId, group.parentId) &&
+            Objects.equals(groupName, group.groupName) &&
+            Objects.equals(label, group.label) &&
+            Objects.equals(desc, group.desc) &&
+            Objects.equals(inheritedGroups, group.inheritedGroups) &&
+            Objects.equals(nestedGroups, group.nestedGroups);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, parentId, groupName, label, desc, inheritedGroups, nestedGroups);
+  }
 }
