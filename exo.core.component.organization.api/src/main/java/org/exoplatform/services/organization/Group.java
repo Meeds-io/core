@@ -19,6 +19,7 @@
 package org.exoplatform.services.organization;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * This is the interface for the group data model.
@@ -109,6 +110,37 @@ public interface Group extends Serializable
     */
    default public boolean isInternalStore() {
      throw new UnsupportedOperationException("originatingStore is not supported by this object class " + getClass().getName());
+   }
+
+   /**
+    * Set originating store name (internal or external)
+    *
+    * @param nestedGroups
+    */
+   default public void setNestedGroups(Set<String> nestedGroups) {
+      throw new UnsupportedOperationException("nestedGroups is not supported by this object class " + getClass().getName());
+   }
+
+   /**
+    * @return originating store name (internal or external)
+    */
+   default public Set<String> getNestedGroups() {
+      throw new UnsupportedOperationException("nestedGroups is not supported by this object class " + getClass().getName());
+   }
+   /**
+    * Set originating store name (internal or external)
+    *
+    * @param inheritedGroups
+    */
+   default public void setInheritedGroups(Set<String> inheritedGroups) {
+      throw new UnsupportedOperationException("inheritedGroups is not supported by this object class " + getClass().getName());
+   }
+
+   /**
+    * @return originating store name (internal or external)
+    */
+   default public Set<String> getInheritedGroups() {
+      throw new UnsupportedOperationException("inheritedGroups is not supported by this object class " + getClass().getName());
    }
 
 }

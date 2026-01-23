@@ -136,6 +136,10 @@ public class DummyOrganizationService extends BaseOrganizationService
          return memberships;
       }
 
+      public Collection<Membership> findMembershipsByUser(String userName, boolean includeInherited) throws Exception {
+         return null;
+      }
+
       public Collection<Membership> findMembershipsByUserAndGroup(String userName, String groupId) throws Exception
       {
          return null;

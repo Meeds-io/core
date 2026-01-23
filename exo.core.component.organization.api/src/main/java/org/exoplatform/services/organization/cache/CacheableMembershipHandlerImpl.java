@@ -149,11 +149,19 @@ public class CacheableMembershipHandlerImpl implements MembershipHandler
     */
    public Collection<Membership> findMembershipsByUser(String userName) throws Exception
    {
-      Collection<Membership> memberships = membershipHandler.findMembershipsByUser(userName);
+      return findMembershipsByUser(userName, false);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Collection<Membership> findMembershipsByUser(String userName, boolean includeInherited) throws Exception
+   {
+      Collection<Membership> memberships = membershipHandler.findMembershipsByUser(userName, includeInherited);
       for (Membership membership : memberships)
       {
          membershipCache.put(membership.getId(), membership);
-         membershipCache.put(new MembershipCacheKey(membership), membership);
+         membershipCache.put(new MembershipCacheKey(membership.getUserName(), membership.getGroupId(), membership.getMembershipType(), includeInherited), membership);
       }
 
       return memberships;
