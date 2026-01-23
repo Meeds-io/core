@@ -51,4 +51,14 @@ public interface Membership extends Serializable
     * @return the name of the user.
     */
    public String getUserName();
+
+   /**
+    * @return the isInherited.
+    */
+   public boolean isInherited();
+
+   /**
+    * @param isInherited the name of the MembershipType.
+    */
+   public void setInherited(boolean isInherited);
 }

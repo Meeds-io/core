@@ -127,6 +127,18 @@ public interface MembershipHandler
     * Use this method to find all the memberships of an user in any group.
     * 
     * @param userName
+    * @param includeInherited
+    * @return A collection of the membership. The collection cannot be null and
+    *         if no membership is found , the collection should be empty
+    * @throws Exception Usually an exception is thrown if the method cannot
+    *           access the database.
+    */
+   Collection<Membership> findMembershipsByUser(String userName, boolean includeInherited) throws Exception;
+
+   /**
+    * Use this method to find all the memberships of an user in any group.
+    *
+    * @param userName
     * @return A collection of the membership. The collection cannot be null and
     *         if no membership is found , the collection should be empty
     * @throws Exception Usually an exception is thrown if the method cannot
