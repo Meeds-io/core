@@ -97,7 +97,7 @@ public class UserProfileImpl implements UserProfile, ExtendedCloneable, Serializ
       try
       {
          upi = (UserProfileImpl)super.clone();
-         upi.attributes = new HashMap<String, String>(attributes);
+         upi.attributes = new HashMap<>(attributes);
       }
       catch (CloneNotSupportedException e)
       {

@@ -20,40 +20,24 @@ package org.exoplatform.services.organization.impl;
 
 import java.util.Objects;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import org.exoplatform.services.organization.ExtendedCloneable;
 import org.exoplatform.services.organization.Membership;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class MembershipImpl implements Membership, ExtendedCloneable {
   private static final long serialVersionUID = 3393494689182081442L;
 
-  private String id = null;
+  private String            membershipType   = "member";
 
-  private String membershipType = "member";
+  private String            userName         = null;
 
-  private String userName = null;
+  private String            groupId          = null;
 
-  private String groupId = null;
-
-  private boolean isInherited;
-
-  public MembershipImpl() {
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
+  private boolean           isInherited;
 
   public String getMembershipType() {
     return membershipType;
@@ -87,36 +71,35 @@ public class MembershipImpl implements Membership, ExtendedCloneable {
     this.isInherited = isInherited;
   }
 
-  // toString
-  public String toString() {
-    return "Membership[" + id + "]";
+  public String getId() {
+    return "%s:%s:%s".formatted(membershipType, userName, groupId);
   }
 
-  /**
-   * {@inheritDoc}
-   **/
-  public MembershipImpl clone() {
-    try {
-      return (MembershipImpl) super.clone();
-    } catch (CloneNotSupportedException e) {
-      return this;
-    }
+  @Override
+  public String toString() {
+    return "Membership[%s]".formatted(getId());
+  }
+
+  @Override
+  public MembershipImpl clone() { // NOSONAR
+    return new MembershipImpl(membershipType, userName, groupId, isInherited);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     MembershipImpl that = (MembershipImpl) o;
-    return Objects.equals(id, that.id) &&
-            Objects.equals(membershipType, that.membershipType) &&
-            Objects.equals(userName, that.userName) &&
-            Objects.equals(groupId, that.groupId) &&
-            Objects.equals(isInherited, that.isInherited);
+    return Objects.equals(membershipType, that.membershipType)
+           && Objects.equals(userName, that.userName)
+           && Objects.equals(groupId, that.groupId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, membershipType, userName, groupId);
+    return Objects.hash(membershipType, userName, groupId);
   }
+
 }
