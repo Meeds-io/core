@@ -113,34 +113,31 @@ public interface Group extends Serializable
    }
 
    /**
-    * Set originating store name (internal or external)
-    *
-    * @param nestedGroups
+    * @param nestedMemberships {@link Set} of nested Memberships (with pattern ROLE:GROUP_ID or simply GROUP_ID)
     */
-   default public void setNestedGroups(Set<String> nestedGroups) {
-      throw new UnsupportedOperationException("nestedGroups is not supported by this object class " + getClass().getName());
+   default void setNestedMemberships(Set<NestedMembership> nestedMemberships) {
+      throw new UnsupportedOperationException();
    }
 
    /**
-    * @return originating store name (internal or external)
+    * @return {@link Set} of nested Memberships
     */
-   default public Set<String> getNestedGroups() {
-      throw new UnsupportedOperationException("nestedGroups is not supported by this object class " + getClass().getName());
-   }
-   /**
-    * Set originating store name (internal or external)
-    *
-    * @param inheritedGroups
-    */
-   default public void setInheritedGroups(Set<String> inheritedGroups) {
-      throw new UnsupportedOperationException("inheritedGroups is not supported by this object class " + getClass().getName());
+   default Set<NestedMembership> getNestedMemberships() {
+      throw new UnsupportedOperationException();
    }
 
    /**
-    * @return originating store name (internal or external)
+    * @param inheritedMemberships {@link Set} of inherited Memberships
     */
-   default public Set<String> getInheritedGroups() {
-      throw new UnsupportedOperationException("inheritedGroups is not supported by this object class " + getClass().getName());
+   default void setEnclosingMemberships(Set<NestedMembership> inheritedMemberships) {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
+    * @return {@link Set} of inherited Memberships
+    */
+   default Set<NestedMembership> getEnclosingMemberships() {
+      throw new UnsupportedOperationException();
    }
 
 }
