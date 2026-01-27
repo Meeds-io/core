@@ -21,17 +21,9 @@ package org.exoplatform.services.organization.impl;
 import java.util.Date;
 import java.util.Objects;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import org.exoplatform.services.organization.ExtendedCloneable;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
 public class UserImpl implements User, ExtendedCloneable {
 

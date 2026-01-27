@@ -262,4 +262,21 @@ public interface GroupHandler
    default Collection<Group> findAllGroupsByKeyword(String keyword, List<String> excludedGroupsTypes) throws Exception {
       throw new UnsupportedOperationException();
    }
+
+   /**
+    * @param nestedMembership {@link NestedMembership} to add
+    * @throws Exception when an error occurs while storing the information in database
+    */
+   default void linkGroups(NestedMembership nestedMembership) throws Exception {
+     throw new UnsupportedOperationException();
+   }
+
+   /**
+    * @param nestedMembership {@link NestedMembership} to remove
+    * @throws Exception when an error occurs while storing the information in database
+    */
+   default void unlinkGroups(NestedMembership nestedMembership) throws Exception {
+     throw new UnsupportedOperationException();
+   }
+
 }

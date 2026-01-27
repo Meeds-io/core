@@ -22,26 +22,28 @@ import java.util.Objects;
 import java.util.Set;
 import org.exoplatform.services.organization.ExtendedCloneable;
 import org.exoplatform.services.organization.Group;
+import org.exoplatform.services.organization.NestedMembership;
 import org.exoplatform.services.organization.OrganizationService;
 
 public class GroupImpl implements Group, ExtendedCloneable {
-  private static final long serialVersionUID = -5909516396351606340L;
 
-  private String id;
+  private static final long     serialVersionUID = -5909516396351606340L;
 
-  private String parentId;
+  private String                id;
 
-  private String groupName;
+  private String                parentId;
 
-  private String label;
+  private String                groupName;
 
-  private String desc;
+  private String                label;
 
-  private String originatingStore;
+  private String                desc;
 
-  private Set<String> inheritedGroups;
+  private String                originatingStore;
 
-  private Set<String> nestedGroups;
+  private Set<NestedMembership> enclosingMemberships;                    // NOSONAR
+
+  private Set<NestedMembership> nestedMemberships;                       // NOSONAR
 
   public GroupImpl() {
 
@@ -91,20 +93,24 @@ public class GroupImpl implements Group, ExtendedCloneable {
     desc = s;
   }
 
-  public Set<String> getInheritedGroups() {
-    return this.inheritedGroups;
+  @Override
+  public Set<NestedMembership> getEnclosingMemberships() {
+    return this.enclosingMemberships;
   }
 
-  public void setInheritedGroups(Set<String> inheritedGroups) {
-    this.inheritedGroups = inheritedGroups;
+  @Override
+  public void setEnclosingMemberships(Set<NestedMembership> inheritedMemberships) {
+    this.enclosingMemberships = inheritedMemberships;
   }
 
-  public Set<String> getNestedGroups() {
-    return this.nestedGroups;
+  @Override
+  public Set<NestedMembership> getNestedMemberships() {
+    return this.nestedMemberships;
   }
 
-  public void setNestedGroups(Set<String> nestedGroups) {
-    this.nestedGroups = nestedGroups;
+  @Override
+  public void setNestedMemberships(Set<NestedMembership> nestedMemberships) {
+    this.nestedMemberships = nestedMemberships;
   }
 
   public String toString() {
@@ -147,20 +153,22 @@ public class GroupImpl implements Group, ExtendedCloneable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     GroupImpl group = (GroupImpl) o;
-    return Objects.equals(id, group.id) &&
-            Objects.equals(parentId, group.parentId) &&
-            Objects.equals(groupName, group.groupName) &&
-            Objects.equals(label, group.label) &&
-            Objects.equals(desc, group.desc) &&
-            Objects.equals(inheritedGroups, group.inheritedGroups) &&
-            Objects.equals(nestedGroups, group.nestedGroups);
+    return Objects.equals(id, group.id)
+           && Objects.equals(parentId, group.parentId)
+           && Objects.equals(groupName, group.groupName)
+           && Objects.equals(label, group.label)
+           && Objects.equals(desc, group.desc)
+           && Objects.equals(enclosingMemberships, group.enclosingMemberships)
+           && Objects.equals(nestedMemberships, group.nestedMemberships);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, parentId, groupName, label, desc, inheritedGroups, nestedGroups);
+    return Objects.hash(id, parentId, groupName, label, desc, enclosingMemberships, nestedMemberships);
   }
 }
