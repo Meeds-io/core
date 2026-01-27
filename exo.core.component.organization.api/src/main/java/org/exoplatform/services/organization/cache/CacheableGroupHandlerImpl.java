@@ -24,6 +24,7 @@ import org.exoplatform.services.organization.Group;
 import org.exoplatform.services.organization.GroupEventListener;
 import org.exoplatform.services.organization.GroupHandler;
 import org.exoplatform.services.organization.Membership;
+import org.exoplatform.services.organization.NestedMembership;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -242,8 +243,5 @@ public class CacheableGroupHandlerImpl implements GroupHandler
    {
       groupHandler.moveGroup(parentOriginGroup, parentTargetGroup,groupToMove);
    }
-
-
-
 
 }
