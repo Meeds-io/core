@@ -21,6 +21,8 @@ package org.exoplatform.services.security;
 import org.exoplatform.services.cache.CacheService;
 import org.exoplatform.services.cache.ExoCache;
 
+import java.util.List;
+
 public class IdentityRegistry {
 
   private static final String              CACHE_NAME = "portal.IdentityRegistry";
@@ -64,6 +66,13 @@ public class IdentityRegistry {
    */
   void clear() {
     identitiesCache.clearCache();
+  }
+
+  /**
+   * Retrieves all identities
+   */
+  public List<Identity> getIdentities() throws Exception {
+    return (List<Identity>) identitiesCache.getCachedObjects();
   }
 
 }
