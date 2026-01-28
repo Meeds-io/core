@@ -133,7 +133,9 @@ public interface MembershipHandler
     * @throws Exception Usually an exception is thrown if the method cannot
     *           access the database.
     */
-   Collection<Membership> findMembershipsByUser(String userName, boolean includeInherited) throws Exception;
+   default Collection<Membership> findMembershipsByUser(String userName, boolean includeInherited) throws Exception {
+      throw new UnsupportedOperationException();
+   };
 
    /**
     * Use this method to find all the memberships of an user in any group.
