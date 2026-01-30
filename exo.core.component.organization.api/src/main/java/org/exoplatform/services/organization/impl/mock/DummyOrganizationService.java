@@ -360,6 +360,11 @@ public class DummyOrganizationService extends BaseOrganizationService
          return null;
       }
 
+      @Override
+      public int disableInactiveUsers(int inactiveDays) {
+         return 0;
+      }
+
       /**
        * {@inheritDoc}
        */
