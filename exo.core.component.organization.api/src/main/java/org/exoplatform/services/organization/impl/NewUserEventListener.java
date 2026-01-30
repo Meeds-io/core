@@ -18,7 +18,8 @@
  */
 package org.exoplatform.services.organization.impl;
 
-import org.exoplatform.container.ExoContainer;
+import java.util.List;
+
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.organization.Group;
@@ -28,64 +29,36 @@ import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserEventListener;
 import org.exoplatform.services.organization.UserProfile;
 
-import java.util.Date;
-import java.util.List;
+public class NewUserEventListener extends UserEventListener {
 
-public class NewUserEventListener extends UserEventListener
-{
+  private NewUserConfig config;
 
-   private NewUserConfig config_;
+  public NewUserEventListener(InitParams params) {
+    this.config = params.getObjectParamValues(NewUserConfig.class).get(0);
+  }
 
-   public NewUserEventListener(InitParams params) throws Exception
-   {
-      config_ = (NewUserConfig)params.getObjectParamValues(NewUserConfig.class).get(0);
-   }
+  @Override
+  public void postSave(User user, boolean isNew) throws Exception {
+    OrganizationService organizationService = ExoContainerContext.getService(OrganizationService.class);
+    UserProfile up = organizationService.getUserProfileHandler().createUserProfileInstance(user.getUserName());
+    organizationService.getUserProfileHandler().saveUserProfile(up, false);
+    if (config == null)
+      return;
+    if (isNew && !config.isIgnoreUser(user.getUserName())) {
+      createDefaultUserMemberships(organizationService, user);
+    }
+  }
 
-   public void preSave(User user, boolean isNew) throws Exception
-   {
-      if (isNew)
-      {
-         Date date = new Date();
-         user.setLastLoginTime(date);
-         user.setCreatedDate(date);
+  private void createDefaultUserMemberships(OrganizationService organizationService, User user) throws Exception {
+    List<?> groups = config.getGroup();
+    if (groups != null && groups.isEmpty()) {
+      for (int i = 0; i < groups.size(); i++) {
+        NewUserConfig.JoinGroup jgroup = (NewUserConfig.JoinGroup) groups.get(i);
+        Group group = organizationService.getGroupHandler().findGroupById(jgroup.getGroupId());
+        MembershipType mtype = organizationService.getMembershipTypeHandler().findMembershipType(jgroup.getMembership());
+        organizationService.getMembershipHandler().linkMembership(user, group, mtype, true);
       }
-   }
+    }
+  }
 
-   public void postSave(User user, boolean isNew) throws Exception
-   {
-      ExoContainer pcontainer = ExoContainerContext.getCurrentContainer();
-      OrganizationService service =
-         (OrganizationService)pcontainer.getComponentInstanceOfType(OrganizationService.class);
-      UserProfile up = service.getUserProfileHandler().createUserProfileInstance();
-      up.setUserName(user.getUserName());
-      service.getUserProfileHandler().saveUserProfile(up, false);
-      if (config_ == null)
-         return;
-      if (isNew && !config_.isIgnoreUser(user.getUserName()))
-      {
-         createDefaultUserMemberships(user, service);
-      }
-   }
-
-   public void preDelete(User user) throws Exception
-   {
-   }
-
-   public void postDelete(User user) throws Exception
-   {
-   }
-
-   private void createDefaultUserMemberships(User user, OrganizationService service) throws Exception
-   {
-      List<?> groups = config_.getGroup();
-      if (groups.size() == 0)
-         return;
-      for (int i = 0; i < groups.size(); i++)
-      {
-         NewUserConfig.JoinGroup jgroup = (NewUserConfig.JoinGroup)groups.get(i);
-         Group group = service.getGroupHandler().findGroupById(jgroup.getGroupId());
-         MembershipType mtype = service.getMembershipTypeHandler().findMembershipType(jgroup.getMembership());
-         service.getMembershipHandler().linkMembership(user, group, mtype, true);
-      }
-   }
 }
