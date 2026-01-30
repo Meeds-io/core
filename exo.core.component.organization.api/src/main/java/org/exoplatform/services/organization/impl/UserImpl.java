@@ -32,29 +32,33 @@ public class UserImpl implements User, ExtendedCloneable {
    */
   private static final long serialVersionUID = 6919266039776618161L;
 
-  private String id;
+  private String            id;
 
-  private String userName;
+  private String            userName;
 
-  private String password;
+  private String            password;
 
-  private String firstName;
+  private String            firstName;
 
-  private String lastName;
+  private String            lastName;
 
-  private String email;
+  private String            email;
 
-  private Date createdDate;
+  private Date              createdDate;
 
-  private Date lastLoginTime;
+  private Date              lastLoginTime;
 
-  private String organizationId;
+  private String            organizationId;
 
-  private String displayName;
+  private String            displayName;
 
-  private Boolean enabled;
+  private Boolean           enabled;
 
-  private String originatingStore;
+  private String            originatingStore;
+
+  private String            creationSource;
+
+  private boolean           automaticDeactivation;
 
   public UserImpl() {
   }
@@ -158,7 +162,8 @@ public class UserImpl implements User, ExtendedCloneable {
   }
 
   /**
-   * @return <code>true</code> if the user is enabled, <code>false</code> otherwise
+   * @return <code>true</code> if the user is enabled, <code>false</code>
+   *         otherwise
    */
   public boolean isEnabled() {
     return enabled == null || enabled.booleanValue();
@@ -177,6 +182,7 @@ public class UserImpl implements User, ExtendedCloneable {
    *
    * @param originatingStore
    */
+  @Override
   public void setOriginatingStore(String originatingStore) {
     this.originatingStore = originatingStore;
   }
@@ -184,6 +190,7 @@ public class UserImpl implements User, ExtendedCloneable {
   /**
    * @return originating store name (internal or external)
    */
+  @Override
   public String getOriginatingStore() {
     return originatingStore;
   }
@@ -191,14 +198,33 @@ public class UserImpl implements User, ExtendedCloneable {
   /**
    * @return true if the user was initially added to internal store
    */
+  @Override
   public boolean isInternalStore() {
     return originatingStore == null || OrganizationService.INTERNAL_STORE.equals(originatingStore);
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public UserImpl clone() {
+  @Override
+  public String getCreationSource() {
+    return creationSource;
+  }
+
+  @Override
+  public void setCreationSource(String creationSource) {
+    this.creationSource = creationSource;
+  }
+
+  @Override
+  public boolean isAutomaticDeactivation() {
+    return automaticDeactivation;
+  }
+
+  @Override
+  public void setAutomaticDeactivation(boolean automaticDeactivation) {
+    this.automaticDeactivation = automaticDeactivation;
+  }
+
+  @Override
+  public UserImpl clone() { // NOSONAR
     UserImpl ui;
     try {
       ui = (UserImpl) super.clone();
@@ -211,30 +237,41 @@ public class UserImpl implements User, ExtendedCloneable {
     } catch (CloneNotSupportedException e) {
       return this;
     }
-
     return ui;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     UserImpl user = (UserImpl) o;
-    return Objects.equals(id, user.id) &&
-            Objects.equals(userName, user.userName) &&
-            Objects.equals(password, user.password) &&
-            Objects.equals(firstName, user.firstName) &&
-            Objects.equals(lastName, user.lastName) &&
-            Objects.equals(email, user.email) &&
-            Objects.equals(createdDate, user.createdDate) &&
-            Objects.equals(lastLoginTime, user.lastLoginTime) &&
-            Objects.equals(organizationId, user.organizationId) &&
-            Objects.equals(displayName, user.displayName) &&
-            Objects.equals(enabled, user.enabled);
+    return Objects.equals(id, user.id)
+           && Objects.equals(userName, user.userName)
+           && Objects.equals(password, user.password)
+           && Objects.equals(firstName, user.firstName)
+           && Objects.equals(lastName, user.lastName)
+           && Objects.equals(email, user.email)
+           && Objects.equals(createdDate, user.createdDate)
+           && Objects.equals(lastLoginTime, user.lastLoginTime)
+           && Objects.equals(organizationId, user.organizationId)
+           && Objects.equals(displayName, user.displayName)
+           && Objects.equals(enabled, user.enabled);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, userName, password, firstName, lastName, email, createdDate, lastLoginTime, organizationId, displayName, enabled);
+    return Objects.hash(id,
+                        userName,
+                        password,
+                        firstName,
+                        lastName,
+                        email,
+                        createdDate,
+                        lastLoginTime,
+                        organizationId,
+                        displayName,
+                        enabled);
   }
 }
