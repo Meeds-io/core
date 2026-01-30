@@ -156,22 +156,38 @@ public interface User extends Serializable
     * 
     * @param originatingStore
     */
-   default public void setOriginatingStore(String originatingStore) {
+   default void setOriginatingStore(String originatingStore) {
     throw new UnsupportedOperationException("originatingStore is not supported by this object class " + getClass().getName());
    }
 
    /**
     * @return originating store name (internal or external)
     */
-   default public String getOriginatingStore() {
+   default String getOriginatingStore() {
      throw new UnsupportedOperationException("originatingStore is not supported by this object class " + getClass().getName());
    }
 
    /**
     * @return true if the user was initially added to internal store
     */
-   default public boolean isInternalStore() {
+   default boolean isInternalStore() {
      throw new UnsupportedOperationException("originatingStore is not supported by this object class " + getClass().getName());
+   }
+
+   default String getCreationSource() {
+     throw new UnsupportedOperationException();
+   }
+
+   default void setCreationSource(String creationSource) {
+     throw new UnsupportedOperationException();
+   }
+
+   default boolean isAutomaticDeactivation() {
+     throw new UnsupportedOperationException();
+   }
+
+   default void setAutomaticDeactivation(boolean automaticDeactivation) {
+     throw new UnsupportedOperationException();
    }
 
 }
