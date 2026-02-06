@@ -123,4 +123,11 @@ public interface OrganizationService
     * @throws Exception
     */
    public void addListenerPlugin(ComponentPlugin listener) throws Exception;
+
+   /**
+    * Use this method to register an organization decorator
+    */
+   public default void addDecoratorPlugin(ComponentPlugin decorator) {
+     // no default behavior
+   }
 }
