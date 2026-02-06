@@ -279,4 +279,11 @@ public interface GroupHandler
      throw new UnsupportedOperationException();
    }
 
+   /**
+    * @param groupId {@link Group} to  cache clear
+    */
+   default void clearGroupCache(String groupId) {
+      throw new UnsupportedOperationException();
+   }
+
 }
