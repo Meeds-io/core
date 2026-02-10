@@ -1046,7 +1046,7 @@ public class IDMExternalStoreImportService implements Startable {
   }
 
   private void initializeQueueProcessingScheduledJob() throws Exception {
-    if (StringUtils.isBlank(scheduledDataImportJobCronExpression)) {
+    if (StringUtils.isBlank(scheduledQueueProcessingJobCronExpression)) {
       LOG.warn("Can't initialize Cron Job for IDM Queue Processing, the cron expression is empty");
       return;
     }
@@ -1056,7 +1056,7 @@ public class IDMExternalStoreImportService implements Startable {
     properties.setProperty("jobName", "IDM.QUEUE");
     properties.setProperty("groupName", "PORTAL.IDM");
     properties.setProperty("job", IDMQueueProcessorJob.class.getName());
-    properties.setProperty("expression", scheduledDataImportJobCronExpression);
+    properties.setProperty("expression", scheduledQueueProcessingJobCronExpression);
     params.addParam(properties);
     jobSchedulerService.addCronJob(new CronJob(params));
   }
