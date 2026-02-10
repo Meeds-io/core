@@ -121,18 +121,19 @@ public interface UserHandler
    /**
     * Disables automatically all enabled users who have been inactive for at least
     * the given number of days.
-    *
+    * <p>
     * A user is considered inactive when the last login date is older than
     * (current date - inactiveDays).
-    *
+    * <p>
     * The deactivation is marked as automatic by setting the
     * <code>automaticDeactivation</code> attribute to <code>true</code>.
     *
+    * @param groupId
     * @param inactiveDays the number of days of inactivity after which an enabled
-    *        user account will be automatically disabled
+    *                     user account will be automatically disabled
     * @return the number of users that have been automatically disabled
     */
-   default int disableInactiveUsers(int inactiveDays) {
+   default int disableInactiveUsers(String groupId, int inactiveDays) {
       throw new UnsupportedOperationException();
    }
 
