@@ -18,126 +18,35 @@
  */
 package org.exoplatform.services.organization.impl;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.Membership;
 import org.exoplatform.services.organization.MembershipEventListener;
 import org.exoplatform.services.security.ConversationRegistry;
-import org.exoplatform.services.security.ConversationState;
-import org.exoplatform.services.security.Identity;
-import org.exoplatform.services.security.MembershipEntry;
-import org.exoplatform.services.security.StateKey;
+import org.exoplatform.services.security.IdentityRegistry;
 
-import java.util.Iterator;
+public class MembershipUpdateListener extends MembershipEventListener {
 
-public class MembershipUpdateListener extends MembershipEventListener
-{
+  private final ConversationRegistry conversationRegistry;
 
-   /** Logger. */
-   private static final Log LOG = ExoLogger.getLogger("exo.core.component.organization.api.MembershipUpdateListener");
+  private final IdentityRegistry     identityRegistry;
 
-   /** @see ConversationRegistry */
-   private ConversationRegistry conversationRegistry;
+  public MembershipUpdateListener(ConversationRegistry conversationRegistry, IdentityRegistry identityRegistry) {
+    this.conversationRegistry = conversationRegistry;
+    this.identityRegistry = identityRegistry;
+  }
 
-   public MembershipUpdateListener(ConversationRegistry conversationRegistry)
-   {
-      this.conversationRegistry = conversationRegistry;
-   }
+  @Override
+  public void postDelete(Membership m) throws Exception {
+    refreshUserIdentity(m.getUserName());
+  }
 
-   // >>>>>>>
-   // Update Identity in each ConversationState. In fact each user may have few
-   // ConversationStates but IdentityRegistry keeps Identity that was created
-   // when user log-in last time. Any way Identity in IdentityRegistry will be
-   // updated through ConversationRegistry.
-   // If multi-login is disabled (see DefaultLoginModule, option
-   // 'singleLogin'). Then updating may be more simple, in this case enough
-   // just remove ConversationState (it should be only one) for specified user,
-   // then update Identity in IdentityRegistry. ConversationRegistry will be
-   // updated by SetCurrentIdentityFilter in next request.
+  @Override
+  public void postSave(Membership m, boolean isNew) throws Exception {
+    refreshUserIdentity(m.getUserName());
+  }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void postDelete(Membership m) throws Exception
-   {
-      if (LOG.isDebugEnabled())
-         LOG.debug(">>> In postDelete");
-      String userId = m.getUserName();
-      MembershipEntry expected = new MembershipEntry(m.getGroupId(), m.getMembershipType());
-      for (StateKey key : conversationRegistry.getStateKeys(userId))
-      {
-         ConversationState cstate = conversationRegistry.getState(key);
-         if (cstate == null) {
-           conversationRegistry.unregister(key);
-           continue;
-         }
-         Identity identity = cstate.getIdentity();
-         Iterator<MembershipEntry> iter = identity.getMemberships().iterator();
-         while (iter.hasNext())
-         {
-            MembershipEntry tmp = iter.next();
-            if (tmp.equals(expected))
-            {
-               iter.remove();
-               if (LOG.isDebugEnabled())
-                  LOG.debug("Removed membership entry " + tmp);
-            }
-         }
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void postSave(Membership m, boolean isNew) throws Exception
-   {
-      if (LOG.isDebugEnabled())
-         LOG.debug(">>> In postSave");
-      String userId = m.getUserName();
-      MembershipEntry me = new MembershipEntry(m.getGroupId(), m.getMembershipType());
-      for (StateKey key : conversationRegistry.getStateKeys(userId))
-      {
-         ConversationState cstate = conversationRegistry.getState(key);
-         if (cstate == null) {
-           conversationRegistry.unregister(key);
-           continue;
-         }
-         Identity identity = cstate.getIdentity();
-         Iterator<MembershipEntry> iter = identity.getMemberships().iterator();
-         boolean contains = false;
-         while (iter.hasNext())
-         {
-            if (iter.next().equals(me))
-            {
-               contains = true;
-               break;
-            }
-         }
-         if (!contains)
-         {
-            identity.getMemberships().add(me);
-            if (LOG.isDebugEnabled())
-               LOG.debug("Added membership entry " + me);
-         }
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void preDelete(Membership m) throws Exception
-   {
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void preSave(Membership m, boolean isNew) throws Exception
-   {
-   }
+  private void refreshUserIdentity(String username) {
+    conversationRegistry.unregisterByUserId(username);
+    identityRegistry.unregister(username);
+  }
 
 }
