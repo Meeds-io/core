@@ -362,7 +362,7 @@ public class DummyOrganizationService extends BaseOrganizationService
       }
 
       @Override
-      public int disableInactiveUsers(int inactiveDays) {
+      public int disableInactiveUsers(String groupId, int inactiveDays) {
          return 0;
       }
 
