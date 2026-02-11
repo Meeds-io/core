@@ -135,7 +135,7 @@ public interface MembershipHandler
     */
    default Collection<Membership> findMembershipsByUser(String userName, boolean includeInherited) throws Exception {
       throw new UnsupportedOperationException();
-   };
+   }
 
    /**
     * Use this method to find all the memberships of an user in any group.

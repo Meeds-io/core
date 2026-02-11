@@ -22,12 +22,11 @@ import org.exoplatform.container.component.BaseComponentPlugin;
 
 /**
  * If the other service or a third party want to customize their code to handle
- * a group event, the event can be new , update or remove. They should create a class that extends this class
- * and register the listener to the organization service.
- * There are 2 ways to register a listener to the
- * service. a) To do it programatically: [..] import
- * org.exoplatform.container.PortalContainer ; import
- * org.exoplatform.services.organization.OrganizationService ; [..]
+ * a group event, the event can be new , update or remove. They should create a
+ * class that extends this class and register the listener to the organization
+ * service. There are 2 ways to register a listener to the service. a) To do it
+ * programatically: [..] import org.exoplatform.container.PortalContainer ;
+ * import org.exoplatform.services.organization.OrganizationService ; [..]
  * GroupEventListener listener = new MyGroupEventListener(..) ; PortalContainer
  * pcontainer = PortalContainer.getInstance() ; OrganizationService service =
  * (OrganizationService) pcontainer.getInstanceOfType(OrganizationService.class)
@@ -53,78 +52,80 @@ import org.exoplatform.container.component.BaseComponentPlugin;
  * /configuration&gt;
  * </pre>
  */
-public class GroupEventListener extends BaseComponentPlugin
-{
-   /**
-    * This method is called before the group is persisted to the database.
-    * 
-    * @param group The group to be saved
-    * @param isNew if the group is a new record in the database or not
-    * @throws Exception The developer can decide to throw an exception or not. If
-    *           the listener throw an exception, the organization service should
-    *           not save/update the group to the database
-    */
-   public void preSave(Group group, boolean isNew) throws Exception
-   {
-   }
+public class GroupEventListener extends BaseComponentPlugin {
+  /**
+   * This method is called before the group is persisted to the database.
+   * 
+   * @param group The group to be saved
+   * @param isNew if the group is a new record in the database or not
+   * @throws Exception The developer can decide to throw an exception or not. If
+   *           the listener throw an exception, the organization service should
+   *           not save/update the group to the database
+   */
+  public void preSave(Group group, boolean isNew) throws Exception {
+    // No default behavior
+  }
 
-   /**
-    * This method is called after the group has been saved but not commited yet
-    * 
-    * @param group The group has been saved.
-    * @param isNew if the group is a new record in the database or not
-    * @throws Exception The developer can decide to throw the exception or not.
-    *           If the method throw an exception. The organization service should
-    *           role back the data to the state before the method
-    *           GroupHandler.addChild(..) or GroupHandler.saveGroup(..) is
-    *           called.
-    */
-   public void postSave(Group group, boolean isNew) throws Exception
-   {
-   }
+  /**
+   * This method is called after the group has been saved but not commited yet
+   * 
+   * @param group The group has been saved.
+   * @param isNew if the group is a new record in the database or not
+   * @throws Exception The developer can decide to throw the exception or not.
+   *           If the method throw an exception. The organization service should
+   *           role back the data to the state before the method
+   *           GroupHandler.addChild(..) or GroupHandler.saveGroup(..) is
+   *           called.
+   */
+  public void postSave(Group group, boolean isNew) throws Exception {
+    // No default behavior
+  }
 
-   /**
-    * This method is called before a group should be deleted
-    * 
-    * @param group the group to be delete
-    * @throws Exception The developer can decide to throw the exception or not.
-    *           If the method throw an exception. The organization service should
-    *           not remove the group record from the database.
-    */
-   public void preDelete(Group group) throws Exception
-   {
-   }
+  /**
+   * This method is called before a group should be deleted
+   * 
+   * @param group the group to be delete
+   * @throws Exception The developer can decide to throw the exception or not.
+   *           If the method throw an exception. The organization service should
+   *           not remove the group record from the database.
+   */
+  public void preDelete(Group group) throws Exception {
+    // No default behavior
+  }
 
-   /**
-    * This method should be called after the group has been removed from the
-    * database but not commited yet.
-    * 
-    * @param group The group has been removed.
-    * @throws Exception The developer can decide to throw the exception or not.
-    *           If the method throw the exception, the organization service
-    *           should role back the database to the state before the method
-    *           GroupHandler.removeGroup(..) is called.
-    */
-   public void postDelete(Group group) throws Exception
-   {
-   }
+  /**
+   * This method should be called after the group has been removed from the
+   * database but not commited yet.
+   * 
+   * @param group The group has been removed.
+   * @throws Exception The developer can decide to throw the exception or not.
+   *           If the method throw the exception, the organization service
+   *           should role back the database to the state before the method
+   *           GroupHandler.removeGroup(..) is called.
+   */
+  public void postDelete(Group group) throws Exception {
+    // No default behavior
+  }
 
-   /**
-    * Called after a member group has been linked to a parent group.
-    *
-    * @param nestedMembership added {@link NestedMembership}
-    * @throws Exception if the implementation decides to throw an error
-    */
-   public void linkGroups(NestedMembership nestedMembership) throws Exception {
-   }
+  /**
+   * Called after a member group has been linked to a parent group.
+   *
+   * @param nestedMembership added {@link NestedMembership}
+   * @throws Exception if the implementation decides to throw an error
+   */
+  public void linkGroups(NestedMembership nestedMembership) throws Exception {
+    // No default behavior
+  }
 
-   /**
-    * Called after a member group has been unlinked (removed) from a parent group.
-    *
-    * @param nestedMembership removed {@link NestedMembership}
-    * @throws Exception if the implementation decides to throw an error
-    */
-   public void unlinkGroups(NestedMembership nestedMembership) throws Exception {
-   }
+  /**
+   * Called after a member group has been unlinked (removed) from a parent
+   * group.
+   *
+   * @param nestedMembership removed {@link NestedMembership}
+   * @throws Exception if the implementation decides to throw an error
+   */
+  public void unlinkGroups(NestedMembership nestedMembership) throws Exception {
+    // No default behavior
+  }
 
 }

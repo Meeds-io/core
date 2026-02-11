@@ -55,14 +55,14 @@ public interface Membership extends Serializable
    /**
     * @return the isInherited.
     */
-   default public boolean isInherited() {
+   public default boolean isInherited() {
       return false;
-   };
+   }
 
    /**
     * @param isInherited the name of the MembershipType.
     */
-   default public void setInherited(boolean isInherited) {
+   public default void setInherited(boolean isInherited) {
       throw new UnsupportedOperationException();
-   };
+   }
 }

@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.ListAccess;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This interface is a sub part of the organization service. It is used to manage the groups and
@@ -280,7 +281,15 @@ public interface GroupHandler
    }
 
    /**
-    * @param groupId {@link Group} to  cache clear
+    * @param groupId {@link Group} technical identifier, example: /platform/administrators
+    * @return
+    */
+   default Set<NestedMembership> getNestedMemberships(String groupId) {
+     throw new UnsupportedOperationException();
+   }
+
+   /**
+    * @param groupId {@link Group} technical identifier, example: /platform/administrators
     */
    default void clearGroupCache(String groupId) {
       throw new UnsupportedOperationException();
