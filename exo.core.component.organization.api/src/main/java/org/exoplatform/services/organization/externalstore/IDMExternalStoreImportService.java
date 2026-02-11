@@ -22,6 +22,7 @@ import java.time.*;
 import java.util.*;
 import java.util.function.Consumer;
 
+import io.meeds.core.organization.util.UserModificationSource;
 import org.apache.commons.lang3.StringUtils;
 import org.exoplatform.services.organization.impl.UserImpl;
 import org.picocontainer.Startable;
@@ -849,90 +850,95 @@ public class IDMExternalStoreImportService implements Startable {
     boolean isNew = internalUser == null;
 
     boolean isModified = false;
-    if (isNew) {
-      // Reject usernames containing whitespace or apostrophe before creating the user
-      if (username == null || username.isEmpty()) {
-        LOG.warn("Skipping creation of external user: username is null");
-        return null;
-      }
-
-      boolean hasWhitespace = containsWhitespace(username);
-      boolean hasApostrophe = containsApostrophe(username);
-
-      if (hasWhitespace || hasApostrophe) {
-        StringBuilder reason = new StringBuilder();
-        if (hasWhitespace) {
-          reason.append("whitespace");
-        }
-        if (hasApostrophe) {
-          if (reason.length() > 0) {
-            reason.append(" and ");
-          }
-          reason.append("apostrophe");
+    UserModificationSource.setSource("externalUserSource");
+    try {
+      if (isNew) {
+        // Reject usernames containing whitespace or apostrophe before creating the user
+        if (username == null || username.isEmpty()) {
+          LOG.warn("Skipping creation of external user: username is null");
+          return null;
         }
 
-        LOG.warn("Skipping creation of external user '{}': username contains {}", username, reason);
-        return null;
-      }
-      User externalUser = externalStoreService.getEntity(IDMEntityType.USER, username);
-      externalUser.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
+        boolean hasWhitespace = containsWhitespace(username);
+        boolean hasApostrophe = containsApostrophe(username);
 
-      // This is a mandatory treatment, thus it should not be surrounded by
-      // try/catch block
-      if (externalUser.isEnabled()) {
-        organizationService.getUserHandler().createUser(externalUser, true);
-      } else {
-        // while creating a user : if it is disabled we need to enabled it , create it then disable it
-        // since when creating a disabled user it throws disabled user exception.
-        ((UserImpl) externalUser).setEnabled(true);
-        organizationService.getUserHandler().createUser(externalUser, true);
-        organizationService.getUserHandler().setEnabled(externalUser.getUserName(),false, true);
-      }
-      internalUser = externalUser;
-      try {
-        // The user information creation listener triggering is optional, thus
-        // this is surrounded by try/catch
-        listenerService.broadcast(IDMExternalStoreService.USER_ADDED_FROM_EXTERNAL_STORE, this, externalUser);
-      } catch (Exception e) {
-        LOG.warn("Error while triggering event on user '" + username + "' data import (creation) from external store", e);
-      }
-      importEntityToInternalStore(IDMEntityType.USER_PROFILE, username, updateModified, updateDeleted);
-    } else {
-      if (updateModified) {
-        isModified = updateModified && externalStoreService.isEntityModified(IDMEntityType.USER, username);
-        if (isModified) {
-          User externalUser = externalStoreService.getEntity(IDMEntityType.USER, username);
-          if(internalUser.isEnabled() != externalUser.isEnabled()) {
-            organizationService.getUserHandler().setEnabled(internalUser.getUserName(), externalUser.isEnabled(), true);
+        if (hasWhitespace || hasApostrophe) {
+          StringBuilder reason = new StringBuilder();
+          if (hasWhitespace) {
+            reason.append("whitespace");
           }
-          mergeExternalToInternalUser(internalUser, externalUser);
-          // if user is disalbed we need to enable it , save it then created
-          // since when saving a disabled user it throws disabled user exception.
+          if (hasApostrophe) {
+            if (reason.length() > 0) {
+              reason.append(" and ");
+            }
+            reason.append("apostrophe");
+          }
 
-          if(!internalUser.isEnabled() ) {
-            ((UserImpl) internalUser).setEnabled(true);
-            organizationService.getUserHandler().saveUser(internalUser, true);
-            organizationService.getUserHandler().setEnabled(internalUser.getUserName(), false, true);
-          }else{
-            organizationService.getUserHandler().saveUser(internalUser, true);
-          }
-          try {
-            // The user information creation listener triggering is optional,
-            // thus this is surrounded by try/catch
-            listenerService.broadcast(IDMExternalStoreService.USER_MODIFIED_FROM_EXTERNAL_STORE, this, internalUser);
-          } catch (Exception e) {
-            LOG.warn("Error while triggering event on user '" + username + "' data import (modification) from external store", e);
-          }
+          LOG.warn("Skipping creation of external user '{}': username contains {}", username, reason);
+          return null;
+        }
+        User externalUser = externalStoreService.getEntity(IDMEntityType.USER, username);
+        externalUser.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
+
+        // This is a mandatory treatment, thus it should not be surrounded by
+        // try/catch block
+        if (externalUser.isEnabled()) {
+          organizationService.getUserHandler().createUser(externalUser, true);
+        } else {
+          // while creating a user : if it is disabled we need to enabled it , create it then disable it
+          // since when creating a disabled user it throws disabled user exception.
+          ((UserImpl) externalUser).setEnabled(true);
+          organizationService.getUserHandler().createUser(externalUser, true);
+          organizationService.getUserHandler().setEnabled(externalUser.getUserName(), false, true);
+        }
+        internalUser = externalUser;
+        try {
+          // The user information creation listener triggering is optional, thus
+          // this is surrounded by try/catch
+          listenerService.broadcast(IDMExternalStoreService.USER_ADDED_FROM_EXTERNAL_STORE, this, externalUser);
+        } catch (Exception e) {
+          LOG.warn("Error while triggering event on user '" + username + "' data import (creation) from external store", e);
         }
         importEntityToInternalStore(IDMEntityType.USER_PROFILE, username, updateModified, updateDeleted);
-      }
-    }
+      } else {
+        if (updateModified) {
+          isModified = updateModified && externalStoreService.isEntityModified(IDMEntityType.USER, username);
+          if (isModified) {
+            User externalUser = externalStoreService.getEntity(IDMEntityType.USER, username);
+            if (internalUser.isEnabled() != externalUser.isEnabled()) {
+              organizationService.getUserHandler().setEnabled(internalUser.getUserName(), externalUser.isEnabled(), true);
+            }
+            mergeExternalToInternalUser(internalUser, externalUser);
+            // if user is disalbed we need to enable it , save it then created
+            // since when saving a disabled user it throws disabled user exception.
 
-    // Update user originating store on database without triggering
-    // listeners because the field is for internal use only
-    if (internalUser != null && internalUser.isInternalStore()) {
-      internalUser.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
-      organizationService.getUserHandler().saveUser(internalUser, false);
+            if (!internalUser.isEnabled()) {
+              ((UserImpl) internalUser).setEnabled(true);
+              organizationService.getUserHandler().saveUser(internalUser, true);
+              organizationService.getUserHandler().setEnabled(internalUser.getUserName(), false, true);
+            } else {
+              organizationService.getUserHandler().saveUser(internalUser, true);
+            }
+            try {
+              // The user information creation listener triggering is optional,
+              // thus this is surrounded by try/catch
+              listenerService.broadcast(IDMExternalStoreService.USER_MODIFIED_FROM_EXTERNAL_STORE, this, internalUser);
+            } catch (Exception e) {
+              LOG.warn("Error while triggering event on user '" + username + "' data import (modification) from external store", e);
+            }
+          }
+          importEntityToInternalStore(IDMEntityType.USER_PROFILE, username, updateModified, updateDeleted);
+        }
+      }
+
+      // Update user originating store on database without triggering
+      // listeners because the field is for internal use only
+      if (internalUser != null && internalUser.isInternalStore()) {
+        internalUser.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
+        organizationService.getUserHandler().saveUser(internalUser, false);
+      }
+    } finally {
+      UserModificationSource.clear();
     }
 
     return internalUser;
