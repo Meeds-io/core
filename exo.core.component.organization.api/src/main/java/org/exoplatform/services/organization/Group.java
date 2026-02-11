@@ -113,20 +113,6 @@ public interface Group extends Serializable
    }
 
    /**
-    * @param nestedMemberships {@link Set} of nested Memberships (with pattern ROLE:GROUP_ID or simply GROUP_ID)
-    */
-   default void setNestedMemberships(Set<NestedMembership> nestedMemberships) {
-      throw new UnsupportedOperationException();
-   }
-
-   /**
-    * @return {@link Set} of nested Memberships
-    */
-   default Set<NestedMembership> getNestedMemberships() {
-      throw new UnsupportedOperationException();
-   }
-
-   /**
     * @param inheritedMemberships {@link Set} of inherited Memberships
     */
    default void setEnclosingMemberships(Set<NestedMembership> inheritedMemberships) {

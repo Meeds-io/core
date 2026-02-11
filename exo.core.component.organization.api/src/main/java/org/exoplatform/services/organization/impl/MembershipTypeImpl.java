@@ -21,16 +21,8 @@ package org.exoplatform.services.organization.impl;
 import java.util.Date;
 import java.util.Objects;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import org.exoplatform.services.organization.ExtendedCloneable;
 import org.exoplatform.services.organization.MembershipType;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
 public class MembershipTypeImpl implements MembershipType, ExtendedCloneable {
   private static final long serialVersionUID = -8441178538275068955L;

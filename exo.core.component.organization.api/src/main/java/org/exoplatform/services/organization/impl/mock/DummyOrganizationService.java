@@ -136,6 +136,7 @@ public class DummyOrganizationService extends BaseOrganizationService
          return memberships;
       }
 
+      @Override
       public Collection<Membership> findMembershipsByUser(String userName, boolean includeInherited) throws Exception {
          return findMembershipsByUser(userName);
       }
