@@ -39,14 +39,17 @@ public class MembershipImpl implements Membership, ExtendedCloneable {
 
   private boolean           isInherited;
 
+  @Override
   public String getMembershipType() {
     return membershipType;
   }
 
+  @Override
   public void setMembershipType(String type) {
     this.membershipType = type;
   }
 
+  @Override
   public String getUserName() {
     return userName;
   }
@@ -55,6 +58,7 @@ public class MembershipImpl implements Membership, ExtendedCloneable {
     this.userName = user;
   }
 
+  @Override
   public String getGroupId() {
     return groupId;
   }
@@ -63,14 +67,17 @@ public class MembershipImpl implements Membership, ExtendedCloneable {
     this.groupId = group;
   }
 
+  @Override
   public boolean isInherited() {
     return isInherited;
   }
 
+  @Override
   public void setInherited(boolean isInherited) {
     this.isInherited = isInherited;
   }
 
+  @Override
   public String getId() {
     return "%s:%s:%s".formatted(membershipType, userName, groupId);
   }
