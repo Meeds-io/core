@@ -119,6 +119,25 @@ public interface UserHandler
    User setEnabled(String userName, boolean enabled, boolean broadcast) throws Exception, UnsupportedOperationException;
 
    /**
+    * Disables automatically all enabled users who have been inactive for at least
+    * the given number of days.
+    * <p>
+    * A user is considered inactive when the last login date is older than
+    * (current date - inactiveDays).
+    * <p>
+    * The deactivation is marked as automatic by setting the
+    * <code>automaticDeactivation</code> attribute to <code>true</code>.
+    *
+    * @param groupId
+    * @param inactiveDays the number of days of inactivity after which an enabled
+    *                     user account will be automatically disabled
+    * @return the number of users that have been automatically disabled
+    */
+   default int disableInactiveUsers(String groupId, int inactiveDays) {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
     * @param userName the user that the user handler should search for. This
     * method is equivalent to <code>findUserByName(userName, UserStatus.ENABLED)</code>
     * @return The method return null if there is no user that matches the given username.
