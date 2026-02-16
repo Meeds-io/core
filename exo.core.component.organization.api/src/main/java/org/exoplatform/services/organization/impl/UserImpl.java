@@ -21,277 +21,220 @@ package org.exoplatform.services.organization.impl;
 import java.util.Date;
 import java.util.Objects;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import org.exoplatform.services.organization.ExtendedCloneable;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+public class UserImpl implements User, ExtendedCloneable {
 
-@Entity
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Table(name = "EXO_USER")
-public class UserImpl implements User, ExtendedCloneable
-{
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = 6919266039776618161L;
 
-   /**
-    * The serial version UID
-    */
-   private static final long serialVersionUID = 6919266039776618161L;
+  private String id;
 
-   @Id
-   private String id;
+  private String userName;
 
-   @Column
-   private String userName;
+  private String password;
 
-   @Column
-   private String password;
+  private String firstName;
 
-   @Column
-   private String firstName;
+  private String lastName;
 
-   @Column
-   private String lastName;
+  private String email;
 
-   @Column
-   private String email;
+  private Date createdDate;
 
-   @Column
-   private Date createdDate;
+  private Date lastLoginTime;
 
-   @Column
-   private Date lastLoginTime;
+  private String organizationId;
 
-   @Column
-   private String organizationId;
+  private String displayName;
 
-   @Column
-   private String displayName;
+  private Boolean enabled;
 
-   @Column
-   private Boolean enabled;
+  private String originatingStore;
 
-   @Column(name = "store")
-   private String originatingStore;
+  public UserImpl() {
+  }
 
-   public UserImpl()
-   {
-   }
+  public UserImpl(String username) {
+    this.userName = username;
+  }
 
-   public UserImpl(String username)
-   {
-      this.userName = username;
-   }
+  public String getDisplayName() {
+    return displayName != null ? displayName : getFirstName() + " " + getLastName();
+  }
 
-   public String getDisplayName()
-   {
-      return displayName != null ? displayName : getFirstName() + " " + getLastName();
-   }
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
 
-   public void setDisplayName(String displayName)
-   {
-      this.displayName = displayName;
-   }
+  public String getId() {
+    return id;
+  }
 
-   public String getId()
-   {
-      return id;
-   }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-   public void setId(String id)
-   {
-      this.id = id;
-   }
+  public String getUserName() {
+    return userName;
+  }
 
-   public String getUserName()
-   {
-      return userName;
-   }
+  public void setUserName(String name) {
+    this.userName = name;
+  }
 
-   public void setUserName(String name)
-   {
-      this.userName = name;
-   }
+  public String getPassword() {
+    return password;
+  }
 
-   public String getPassword()
-   {
-      return password;
-   }
+  public void setPassword(String password) {
+    this.password = password;
+  }
 
-   public void setPassword(String password)
-   {
-      this.password = password;
-   }
+  public String getFirstName() {
+    return firstName;
+  }
 
-   public String getFirstName()
-   {
-      return firstName;
-   }
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
 
-   public void setFirstName(String firstName)
-   {
-      this.firstName = firstName;
-   }
+  public String getLastName() {
+    return lastName;
+  }
 
-   public String getLastName()
-   {
-      return lastName;
-   }
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
 
-   public void setLastName(String lastName)
-   {
-      this.lastName = lastName;
-   }
+  public String getEmail() {
+    return email;
+  }
 
-   public String getEmail()
-   {
-      return email;
-   }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-   public void setEmail(String email)
-   {
-      this.email = email;
-   }
+  // wrapper method
+  public String getFullName() {
+    return getDisplayName();
+  }
 
-   // wrapper method
-   public String getFullName()
-   {
-      return getDisplayName();
-   }
+  public void setFullName(String fullName) {
+    setDisplayName(fullName);
+  }
 
-   public void setFullName(String fullName)
-   {
-      setDisplayName(fullName);
-   }
+  public Date getCreatedDate() {
+    return createdDate;
+  }
 
-   public Date getCreatedDate()
-   {
-      return createdDate;
-   }
+  public void setCreatedDate(Date t) {
+    createdDate = t;
+  }
 
-   public void setCreatedDate(Date t)
-   {
-      createdDate = t;
-   }
+  public Date getLastLoginTime() {
+    return lastLoginTime;
+  }
 
-   public Date getLastLoginTime()
-   {
-      return lastLoginTime;
-   }
+  public void setLastLoginTime(Date t) {
+    lastLoginTime = t;
+  }
 
-   public void setLastLoginTime(Date t)
-   {
-      lastLoginTime = t;
-   }
+  // toString
+  public String toString() {
+    return "User[" + id + "|" + userName + "]" + (organizationId == null ? "" : ("@" + organizationId));
+  }
 
-   // toString
-   public String toString()
-   {
-      return "User[" + id + "|" + userName + "]" + (organizationId == null ? "" : ("@" + organizationId));
-   }
+  public String getOrganizationId() {
+    return organizationId;
+  }
 
-   public String getOrganizationId()
-   {
-      return organizationId;
-   }
+  public void setOrganizationId(String organizationId) {
+    this.organizationId = organizationId;
+  }
 
-   public void setOrganizationId(String organizationId)
-   {
-      this.organizationId = organizationId;
-   }
+  /**
+   * @return <code>true</code> if the user is enabled, <code>false</code> otherwise
+   */
+  public boolean isEnabled() {
+    return enabled == null || enabled.booleanValue();
+  }
 
-   /**
-    * @return <code>true</code> if the user is enabled, <code>false</code> otherwise
-    */
-   public boolean isEnabled()
-   {
-      return enabled == null || enabled.booleanValue();
-   }
+  /**
+   * Set it to <code>true</code> or <code>null</code> to enable the user,
+   * <code>false</code> otherwise
+   */
+  public void setEnabled(Boolean enabled) {
+    this.enabled = enabled;
+  }
 
-   /**
-    * Set it to <code>true</code> or <code>null</code> to enable the user, 
-    * <code>false</code> otherwise
-    */
-   public void setEnabled(Boolean enabled)
-   {
-      this.enabled = enabled;
-   }
+  /**
+   * Set originating store name (internal or external)
+   *
+   * @param originatingStore
+   */
+  public void setOriginatingStore(String originatingStore) {
+    this.originatingStore = originatingStore;
+  }
 
-   /**
-    * Set originating store name (internal or external)
-    * 
-    * @param originatingStore
-    */
-   public void setOriginatingStore(String originatingStore) {
-     this.originatingStore = originatingStore;
-   }
+  /**
+   * @return originating store name (internal or external)
+   */
+  public String getOriginatingStore() {
+    return originatingStore;
+  }
 
-   /**
-    * @return originating store name (internal or external)
-    */
-   public String getOriginatingStore() {
-     return originatingStore;
-   }
+  /**
+   * @return true if the user was initially added to internal store
+   */
+  public boolean isInternalStore() {
+    return originatingStore == null || OrganizationService.INTERNAL_STORE.equals(originatingStore);
+  }
 
-   /**
-    * @return true if the user was initially added to internal store
-    */
-   public boolean isInternalStore() {
-     return originatingStore == null || OrganizationService.INTERNAL_STORE.equals(originatingStore);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public UserImpl clone()
-   {
-      UserImpl ui;
-      try
-      {
-         ui = (UserImpl)super.clone();
-         if (createdDate != null)
-         {
-            ui.createdDate = (Date)createdDate.clone();
-         }
-         if (lastLoginTime != null)
-         {
-            ui.lastLoginTime = (Date)lastLoginTime.clone();
-         }
+  /**
+   * {@inheritDoc}
+   */
+  public UserImpl clone() {
+    UserImpl ui;
+    try {
+      ui = (UserImpl) super.clone();
+      if (createdDate != null) {
+        ui.createdDate = (Date) createdDate.clone();
       }
-      catch (CloneNotSupportedException e)
-      {
-         return this;
+      if (lastLoginTime != null) {
+        ui.lastLoginTime = (Date) lastLoginTime.clone();
       }
+    } catch (CloneNotSupportedException e) {
+      return this;
+    }
 
-      return ui;
-   }
+    return ui;
+  }
 
-   @Override
-   public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      UserImpl user = (UserImpl) o;
-      return Objects.equals(id, user.id) &&
-              Objects.equals(userName, user.userName) &&
-              Objects.equals(password, user.password) &&
-              Objects.equals(firstName, user.firstName) &&
-              Objects.equals(lastName, user.lastName) &&
-              Objects.equals(email, user.email) &&
-              Objects.equals(createdDate, user.createdDate) &&
-              Objects.equals(lastLoginTime, user.lastLoginTime) &&
-              Objects.equals(organizationId, user.organizationId) &&
-              Objects.equals(displayName, user.displayName) &&
-              Objects.equals(enabled, user.enabled);
-   }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    UserImpl user = (UserImpl) o;
+    return Objects.equals(id, user.id) &&
+            Objects.equals(userName, user.userName) &&
+            Objects.equals(password, user.password) &&
+            Objects.equals(firstName, user.firstName) &&
+            Objects.equals(lastName, user.lastName) &&
+            Objects.equals(email, user.email) &&
+            Objects.equals(createdDate, user.createdDate) &&
+            Objects.equals(lastLoginTime, user.lastLoginTime) &&
+            Objects.equals(organizationId, user.organizationId) &&
+            Objects.equals(displayName, user.displayName) &&
+            Objects.equals(enabled, user.enabled);
+  }
 
-   @Override
-   public int hashCode() {
-      return Objects.hash(id, userName, password, firstName, lastName, email, createdDate, lastLoginTime, organizationId, displayName, enabled);
-   }
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, userName, password, firstName, lastName, email, createdDate, lastLoginTime, organizationId, displayName, enabled);
+  }
 }

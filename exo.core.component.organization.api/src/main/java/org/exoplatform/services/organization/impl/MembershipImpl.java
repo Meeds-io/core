@@ -20,114 +20,93 @@ package org.exoplatform.services.organization.impl;
 
 import java.util.Objects;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import org.exoplatform.services.organization.ExtendedCloneable;
 import org.exoplatform.services.organization.Membership;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@Entity
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Table(name = "EXO_MEMBERSHIP")
-public class MembershipImpl implements Membership, ExtendedCloneable
-{
+@AllArgsConstructor
+@NoArgsConstructor
+public class MembershipImpl implements Membership, ExtendedCloneable {
   private static final long serialVersionUID = 3393494689182081442L;
 
-  @Id
-   private String id = null;
+  private String            membershipType   = "member";
 
-   @Column
-   private String membershipType = "member";
+  private String            userName         = null;
 
-   @Column
-   private String userName = null;
+  private String            groupId          = null;
 
-   @Column
-   private String groupId = null;
+  private boolean           isInherited;
 
-   public MembershipImpl()
-   {
-   }
+  @Override
+  public String getMembershipType() {
+    return membershipType;
+  }
 
-   public String getId()
-   {
-      return id;
-   }
+  @Override
+  public void setMembershipType(String type) {
+    this.membershipType = type;
+  }
 
-   public void setId(String id)
-   {
-      this.id = id;
-   }
+  @Override
+  public String getUserName() {
+    return userName;
+  }
 
-   public String getMembershipType()
-   {
-      return membershipType;
-   }
+  public void setUserName(String user) {
+    this.userName = user;
+  }
 
-   public void setMembershipType(String type)
-   {
-      this.membershipType = type;
-   }
+  @Override
+  public String getGroupId() {
+    return groupId;
+  }
 
-   public String getUserName()
-   {
-      return userName;
-   }
+  public void setGroupId(String group) {
+    this.groupId = group;
+  }
 
-   public void setUserName(String user)
-   {
-      this.userName = user;
-   }
+  @Override
+  public boolean isInherited() {
+    return isInherited;
+  }
 
-   public String getGroupId()
-   {
-      return groupId;
-   }
+  @Override
+  public void setInherited(boolean isInherited) {
+    this.isInherited = isInherited;
+  }
 
-   public void setGroupId(String group)
-   {
-      this.groupId = group;
-   }
+  @Override
+  public String getId() {
+    return "%s:%s:%s".formatted(membershipType, userName, groupId);
+  }
 
-   // toString
-   public String toString()
-   {
-      return "Membership[" + id + "]";
-   }
+  @Override
+  public String toString() {
+    return "Membership[%s]".formatted(getId());
+  }
 
-   /**
-    * {@inheritDoc}
-    **/
-   public MembershipImpl clone()
-   {
-      try
-      {
-         return (MembershipImpl)super.clone();
-      }
-      catch (CloneNotSupportedException e)
-      {
-         return this;
-      }
-   }
+  @Override
+  public MembershipImpl clone() { // NOSONAR
+    return new MembershipImpl(membershipType, userName, groupId, isInherited);
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MembershipImpl that = (MembershipImpl) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(membershipType, that.membershipType) &&
-                Objects.equals(userName, that.userName) &&
-                Objects.equals(groupId, that.groupId);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    MembershipImpl that = (MembershipImpl) o;
+    return Objects.equals(membershipType, that.membershipType)
+           && Objects.equals(userName, that.userName)
+           && Objects.equals(groupId, that.groupId);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, membershipType, userName, groupId);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(membershipType, userName, groupId);
+  }
+
 }

@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.ListAccess;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This interface is a sub part of the organization service. It is used to manage the groups and
@@ -262,4 +263,36 @@ public interface GroupHandler
    default Collection<Group> findAllGroupsByKeyword(String keyword, List<String> excludedGroupsTypes) throws Exception {
       throw new UnsupportedOperationException();
    }
+
+   /**
+    * @param nestedMembership {@link NestedMembership} to add
+    * @throws Exception when an error occurs while storing the information in database
+    */
+   default void linkGroups(NestedMembership nestedMembership) throws Exception {
+     throw new UnsupportedOperationException();
+   }
+
+   /**
+    * @param nestedMembership {@link NestedMembership} to remove
+    * @throws Exception when an error occurs while storing the information in database
+    */
+   default void unlinkGroups(NestedMembership nestedMembership) throws Exception {
+     throw new UnsupportedOperationException();
+   }
+
+   /**
+    * @param groupId {@link Group} technical identifier, example: /platform/administrators
+    * @return
+    */
+   default Set<NestedMembership> getNestedMemberships(String groupId) {
+     throw new UnsupportedOperationException();
+   }
+
+   /**
+    * @param groupId {@link Group} technical identifier, example: /platform/administrators
+    */
+   default void clearGroupCache(String groupId) {
+      throw new UnsupportedOperationException();
+   }
+
 }
