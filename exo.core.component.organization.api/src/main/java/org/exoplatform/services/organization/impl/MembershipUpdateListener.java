@@ -23,6 +23,8 @@ import org.exoplatform.services.organization.MembershipEventListener;
 import org.exoplatform.services.security.ConversationRegistry;
 import org.exoplatform.services.security.IdentityRegistry;
 
+import static org.exoplatform.container.component.RequestLifeCycle.restartTransaction;
+
 public class MembershipUpdateListener extends MembershipEventListener {
 
   private final ConversationRegistry conversationRegistry;
@@ -47,6 +49,7 @@ public class MembershipUpdateListener extends MembershipEventListener {
   private void refreshUserIdentity(String username) {
     conversationRegistry.unregisterByUserId(username);
     identityRegistry.unregister(username);
+    restartTransaction();
   }
 
 }
