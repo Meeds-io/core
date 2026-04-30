@@ -22,7 +22,7 @@
    <parent>
       <groupId>io.meeds.core</groupId>
       <artifactId>core-parent</artifactId>
-      <version>7.2.x-meed-SNAPSHOT</version>
+      <version>7.2.0-meed-20260430</version>
    </parent>
    <artifactId>exo.core.component.organization.api</artifactId>
    <name>Meeds:: PLF Core :: Component :: Organization Service API</name>
