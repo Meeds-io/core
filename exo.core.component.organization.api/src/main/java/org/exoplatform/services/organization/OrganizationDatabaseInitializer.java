@@ -47,6 +47,8 @@ public class OrganizationDatabaseInitializer extends BaseComponentPlugin impleme
 
   private boolean             updateUsers_;
 
+  private boolean             updateGroups;
+
   public OrganizationDatabaseInitializer(InitParams params) throws Exception {
     String checkConfig = params.getValueParam("checkDatabaseAlgorithm").getValue();
     if (checkConfig.trim().equalsIgnoreCase("entry")) {
@@ -60,6 +62,11 @@ public class OrganizationDatabaseInitializer extends BaseComponentPlugin impleme
     if (usParam != null) {
       String updateUsersParam = usParam.getValue();
       updateUsers_ = (updateUsersParam != null && updateUsersParam.trim().equalsIgnoreCase("true"));
+    }
+    ValueParam gpParam = params.getValueParam("updateGroups");
+    if (gpParam != null) {
+      String updateGroupsParam = gpParam.getValue();
+      updateGroups = (updateGroupsParam != null && updateGroupsParam.trim().equalsIgnoreCase("true"));
     }
     config_ = params.getObjectParamValues(OrganizationConfig.class).get(0);
   }
@@ -100,8 +107,8 @@ public class OrganizationDatabaseInitializer extends BaseComponentPlugin impleme
         groupId = "/" + data.getName();
       else
         groupId = data.getParentId() + "/" + data.getName();
-
-      if (orgService.getGroupHandler().findGroupById(groupId) == null) {
+      Group existingGroup =  orgService.getGroupHandler().findGroupById(groupId);
+      if (existingGroup == null) {
         Group group = orgService.getGroupHandler().createGroupInstance();
         group.setGroupName(data.getName());
         group.setDescription(data.getDescription());
@@ -113,6 +120,14 @@ public class OrganizationDatabaseInitializer extends BaseComponentPlugin impleme
           orgService.getGroupHandler().addChild(parentGroup, group, true);
         }
         printInfo("    Create Group " + groupId);
+      } else if (updateGroups) {
+        if (!existingGroup.getLabel().equals(data.getLabel()) ||
+            !existingGroup.getDescription().equals(data.getDescription())) {
+          existingGroup.setLabel(data.getLabel());
+          existingGroup.setDescription(data.getDescription());
+          orgService.getGroupHandler().saveGroup(existingGroup, true);
+          printInfo(String.format("Update Group: %s", groupId));
+        }
       } else {
         printInfo("    Group " + groupId + " already exists, ignoring the entry");
       }
