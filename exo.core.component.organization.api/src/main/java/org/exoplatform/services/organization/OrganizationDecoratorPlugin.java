@@ -18,9 +18,12 @@
  */
 package org.exoplatform.services.organization;
 
-@FunctionalInterface
 public interface OrganizationDecoratorPlugin<T> {
 
   T decorate(T obj);
+
+  default T undecorate(T obj) {
+    return obj;
+  }
 
 }
