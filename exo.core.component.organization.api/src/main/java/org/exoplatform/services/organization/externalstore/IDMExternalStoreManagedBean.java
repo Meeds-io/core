@@ -203,7 +203,7 @@ public class IDMExternalStoreManagedBean implements Startable {
         getExternalStoreImportService().importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS,
                                                                     entityId,
                                                                     true,
-                                                                    true);
+                                                                    getExternalStoreImportService().isUpdateDeletedGroupMemberships());
       }
     } finally {
       end();
