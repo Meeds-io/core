@@ -59,6 +59,10 @@ public class IDMExternalStoreImportService implements Startable {
 
   public static final String      EXTERNAL_STORE_DELETE_MISSING_ENTRIES     = "exo.idm.externalStore.entries.missing.delete";
 
+  public static final String      EXTERNAL_STORE_DELETE_MISSING_USER_MEMBERSHIP     = "exo.idm.externalStore.user.memberships.update.delete";
+
+  public static final String      EXTERNAL_STORE_DELETE_MISSING_GROUP_MEMBERSHIP     = "exo.idm.externalStore.group.memberships.update.delete";
+
   private ExoContainer            container;
 
   private OrganizationService     organizationService;
@@ -81,6 +85,10 @@ public class IDMExternalStoreImportService implements Startable {
 
   private boolean                 interrupted;
 
+  private boolean                 updateDeletedUserMemberships = true;
+
+  private boolean                 updateDeletedGroupMemberships = true;
+
   public IDMExternalStoreImportService(ExoContainer container,
                                        OrganizationService organizationService,
                                        ListenerService listenerService,
@@ -95,6 +103,12 @@ public class IDMExternalStoreImportService implements Startable {
     this.externalStoreService = externalStoreService;
     this.jobSchedulerService = jobSchedulerService;
     if (params != null) {
+      if (params.containsKey(EXTERNAL_STORE_DELETE_MISSING_USER_MEMBERSHIP)) {
+        updateDeletedUserMemberships = Boolean.parseBoolean(params.getValueParam(EXTERNAL_STORE_DELETE_MISSING_USER_MEMBERSHIP).getValue());
+      }
+      if (params.containsKey(EXTERNAL_STORE_DELETE_MISSING_GROUP_MEMBERSHIP)) {
+        updateDeletedGroupMemberships = Boolean.parseBoolean(params.getValueParam(EXTERNAL_STORE_DELETE_MISSING_GROUP_MEMBERSHIP).getValue());
+      }
       if (params.containsKey(EXTERNAL_STORE_IMPORT_CRON_EXPRESSION)) {
         scheduledDataImportJobCronExpression = params.getValueParam(EXTERNAL_STORE_IMPORT_CRON_EXPRESSION).getValue();
       }
@@ -630,20 +644,21 @@ public class IDMExternalStoreImportService implements Startable {
       internalMemberships = organizationService.getMembershipHandler().findMembershipsByGroup(group);
     }
     Collection externalMemberships = externalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS, groupId);
-    importMemberships(IDMEntityType.GROUP_MEMBERSHIPS, externalMemberships, internalMemberships);
+    importMemberships(IDMEntityType.GROUP_MEMBERSHIPS, externalMemberships, internalMemberships, updateDeleted);
   }
 
   @SuppressWarnings({ "rawtypes" })
   private void importUserMemberships(String username, boolean updateModified, boolean updateDeleted) throws Exception {
     Collection internalMemberships = organizationService.getMembershipHandler().findMembershipsByUser(username);
     Collection externalMemberships = externalStoreService.getEntity(IDMEntityType.USER_MEMBERSHIPS, username);
-    importMemberships(IDMEntityType.USER_MEMBERSHIPS, externalMemberships, internalMemberships);
+    importMemberships(IDMEntityType.USER_MEMBERSHIPS, externalMemberships, internalMemberships, updateDeleted);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private void importMemberships(IDMEntityType<?> entityType,
                                  Collection externalMemberships,
-                                 Collection internalMemberships) throws Exception {
+                                 Collection internalMemberships,
+                                 boolean updateDeleted) throws Exception {
     if (externalMemberships != null && !externalMemberships.isEmpty()) {
       List membershipsToAdd = new ArrayList(externalMemberships);
       for (Object object : externalMemberships) {
@@ -657,17 +672,18 @@ public class IDMExternalStoreImportService implements Startable {
         importMembership(entityType, membership, false, false);
       }
     }
+    if (updateDeleted) {
+      // Check deleted user memberships on external store
+      for (Object object : internalMemberships) {
+        Membership membership = (Membership) object;
+        Group group = organizationService.getGroupHandler().findGroupById(membership.getGroupId());
+        User user = organizationService.getUserHandler().findUserByName(membership.getUserName(), UserStatus.ANY);
 
-    // Check deleted user memberships on external store
-    for (Object object : internalMemberships) {
-      Membership membership = (Membership) object;
-      Group group = organizationService.getGroupHandler().findGroupById(membership.getGroupId());
-      User user = organizationService.getUserHandler().findUserByName(membership.getUserName(), UserStatus.ANY);
-
-      if (group == null || user == null || (!group.isInternalStore() && !user.isInternalStore()
-          && (externalMemberships == null || !externalMemberships.contains(membership)))) {
-        LOG.trace("Remove deleted membership from external store '{}'", membership);
-        organizationService.getMembershipHandler().removeMembership(membership.getId(), true);
+        if (group == null || user == null || (!group.isInternalStore() && !user.isInternalStore()
+            && (externalMemberships == null || !externalMemberships.contains(membership)))) {
+          LOG.trace("Remove deleted membership from external store '{}'", membership);
+          organizationService.getMembershipHandler().removeMembership(membership.getId(), true);
+        }
       }
     }
   }
@@ -993,9 +1009,9 @@ public class IDMExternalStoreImportService implements Startable {
         // by IDM principal IDM removal
         if (IDMOperationType.ADD_OR_UPDATE.equals(queueEntry.getOperationType())) {
           if (entityType.equals(IDMEntityType.USER)) {
-            importEntityToInternalStore(IDMEntityType.USER_MEMBERSHIPS, queueEntry.getEntityId(), true, true);
+            importEntityToInternalStore(IDMEntityType.USER_MEMBERSHIPS, queueEntry.getEntityId(), true, updateDeletedUserMemberships);
           } else if (entityType.equals(IDMEntityType.GROUP)) {
-            importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, queueEntry.getEntityId(), true, true);
+            importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, queueEntry.getEntityId(), true, updateDeletedGroupMemberships);
           }
         }
 
@@ -1113,5 +1129,15 @@ public class IDMExternalStoreImportService implements Startable {
 
   private boolean containsApostrophe(String username) {
     return username.indexOf('\'') >= 0;
+
   }
+
+  public boolean isUpdateDeletedUserMemberships() {
+    return this.updateDeletedUserMemberships;
+  }
+
+  public boolean isUpdateDeletedGroupMemberships() {
+    return this.updateDeletedGroupMemberships;
+  }
+
 }
