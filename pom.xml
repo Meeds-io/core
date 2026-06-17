@@ -23,7 +23,7 @@
    <parent>
       <artifactId>maven-parent-pom</artifactId>
       <groupId>io.meeds</groupId>
-      <version>29-RC01</version>
+      <version>29</version>
       <relativePath />
    </parent>
 
