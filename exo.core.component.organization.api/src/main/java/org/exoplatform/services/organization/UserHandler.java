@@ -201,6 +201,18 @@ public interface UserHandler
    }
 
    /**
+    * This method return the list of the users in a given
+    * group.
+    *
+    * @param groupId id of the group.
+    * @return return a list of identifiers of users in the group
+    * @throws Exception any exception
+    */
+    default List<String> findUserNamesByGroupId(String groupId) {
+       throw new UnsupportedOperationException();
+    }
+
+   /**
     * This method should search and return the list of the users in a given
     * group.
     *

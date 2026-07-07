@@ -439,6 +439,11 @@ public class DummyOrganizationService extends BaseOrganizationService
       {
          return findAllUsers(status);
       }
+
+      @Override
+      public List<String> findUserNamesByGroupId(String groupId) {
+         return Arrays.stream(new String[] {"john", "test"}).toList();
+      }
    }
 
    public static class GroupHandlerImpl implements GroupHandler
