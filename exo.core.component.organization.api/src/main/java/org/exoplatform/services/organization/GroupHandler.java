@@ -295,4 +295,19 @@ public interface GroupHandler
       throw new UnsupportedOperationException();
    }
 
+   /**
+    * Updates an existing group with the provided data.
+    * This method performs a full update of the group including:
+    * group properties update(label, description, ...), Management of enclosing (inherited) memberships changes
+    * @param group the group object containing the updated data. Must not be null and must have a valid ID.
+    * @param broadcast if {@code true}, pre-save and post-save events will be triggered
+    *
+    * @throws IllegalArgumentException if the group or its ID is null
+    * @throws Exception if the group does not exist, or if any persistence operation fails
+    *
+    */
+   default void updateGroup(Group group, boolean broadcast) throws Exception {
+      throw new UnsupportedOperationException();
+   }
+
 }
