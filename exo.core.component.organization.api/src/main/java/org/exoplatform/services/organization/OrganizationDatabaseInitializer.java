@@ -121,10 +121,14 @@ public class OrganizationDatabaseInitializer extends BaseComponentPlugin impleme
         }
         printInfo("    Create Group " + groupId);
       } else if (updateGroups) {
-        if (!existingGroup.getLabel().equals(data.getLabel()) ||
-            !existingGroup.getDescription().equals(data.getDescription())) {
-          existingGroup.setLabel(data.getLabel());
-          existingGroup.setDescription(data.getDescription());
+        // Keep the existing value when the configuration doesn't define one,
+        // to avoid wiping an administrator defined label/description on each restart
+        String label = data.getLabel() == null ? existingGroup.getLabel() : data.getLabel();
+        String description = data.getDescription() == null ? existingGroup.getDescription() : data.getDescription();
+        if (!StringUtils.equals(existingGroup.getLabel(), label)
+            || !StringUtils.equals(existingGroup.getDescription(), description)) {
+          existingGroup.setLabel(label);
+          existingGroup.setDescription(description);
           orgService.getGroupHandler().saveGroup(existingGroup, true);
           printInfo(String.format("Update Group: %s", groupId));
         }
