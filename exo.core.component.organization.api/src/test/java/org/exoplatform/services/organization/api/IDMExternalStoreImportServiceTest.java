@@ -96,14 +96,14 @@ public class IDMExternalStoreImportServiceTest {
     //
     idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.USER_PROFILE, userName, false, false);
     verify(listenerService, times(0)).broadcast(eq(IDMExternalStoreService.USER_PROFILE_ADDED_FROM_EXTERNAL_STORE),
-                                                anyObject(),
+                                                any(),
                                                 argThat(param -> param instanceof HashMap<?, ?>));
 
     when(externalUserProfile.getUserInfoMap()).thenReturn(new HashMap<>());
     //
     idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.USER_PROFILE, userName, false, false);
     verify(listenerService, times(0)).broadcast(eq(IDMExternalStoreService.USER_PROFILE_ADDED_FROM_EXTERNAL_STORE),
-                                                anyObject(),
+                                                any(),
                                                 argThat(param -> param instanceof HashMap<?, ?>));
 
     Map<String, String> propertiesMap = new HashMap<>();
@@ -112,7 +112,7 @@ public class IDMExternalStoreImportServiceTest {
     //
     idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.USER_PROFILE, userName, false, false);
     verify(listenerService, times(1)).broadcast(eq(IDMExternalStoreService.USER_PROFILE_ADDED_FROM_EXTERNAL_STORE),
-                                                anyObject(),
+                                                any(),
                                                 argThat(param -> param instanceof HashMap<?, ?>));
     UserProfile userProfile = new UserProfileImpl();
     userProfile.setUserName(userName);
@@ -121,7 +121,7 @@ public class IDMExternalStoreImportServiceTest {
     //
     idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.USER_PROFILE, userName, false, false);
     verify(listenerService, atLeast(0)).broadcast(eq(IDMExternalStoreService.USER_PROFILE_ADDED_FROM_EXTERNAL_STORE),
-                                                  anyObject(),
+                                                  any(),
                                                   argThat(param -> param instanceof HashMap<?, ?>));
 
     Map<String, String> updatedPropertyMap = new HashMap<>();
@@ -130,7 +130,7 @@ public class IDMExternalStoreImportServiceTest {
     //
     idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.USER_PROFILE, userName, false, false);
     verify(listenerService, atLeast(1)).broadcast(eq(IDMExternalStoreService.USER_PROFILE_ADDED_FROM_EXTERNAL_STORE),
-                                                  anyObject(),
+                                                  any(),
                                                   argThat(param -> param instanceof HashMap<?, ?>));
   }
 
