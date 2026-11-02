@@ -434,6 +434,31 @@ public class IDMExternalStoreImportServiceTest {
     verify(idmExternalStoreService, never()).isEntityPresent(IDMEntityType.USER, "root");
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  public void checkDeletedUsersQueuesUserWhoseDirectoryLookupFailsAndChecksTheNextOne() throws Exception {
+    when(idmExternalStoreService.getManagedEntityTypes()).thenReturn(Set.of(IDMEntityType.USER));
+    ListAccess<User> storedUsers = mock(ListAccess.class);
+    when(storedUsers.getSize()).thenReturn(2);
+    when(storedUsers.load(0, 2)).thenReturn(new User[] { new UserImpl("failing"), new UserImpl("gone") });
+    when(idmExternalStoreService.getAllInternalUsers()).thenReturn(storedUsers);
+    ListAccess<String> externalUsernames = mock(ListAccess.class);
+    when(externalUsernames.load(0, Integer.MAX_VALUE)).thenReturn(new String[] { "john" });
+    when(idmExternalStoreService.getAllOfType(IDMEntityType.USER, null)).thenReturn(externalUsernames);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER,
+                                                 "failing")).thenThrow(new RuntimeException("Operation error on LDAP store"));
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "gone")).thenReturn(false);
+    when(userHandler.findUserByName("failing")).thenReturn(externalUser("failing"));
+    when(userHandler.findUserByName("gone")).thenReturn(externalUser("gone"));
+
+    List<String> deletedUsernames = new ArrayList<>();
+    idmExternalStoreImportService.checkDeletedEntitiesOfType(IDMEntityType.USER, deletedUsernames::add);
+
+    // the user whose lookup failed is queued to be checked again, and the next
+    // user is still checked
+    assertEquals(List.of("failing", "gone"), deletedUsernames);
+  }
+
   /**
    * Mocks the internal store with its default case-insensitive user search
    * (exo.idm.search.notCaseSensitive=true): a username lookup ignores the

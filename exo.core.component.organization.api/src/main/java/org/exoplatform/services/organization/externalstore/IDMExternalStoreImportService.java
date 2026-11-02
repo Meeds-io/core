@@ -529,7 +529,7 @@ public class IDMExternalStoreImportService implements Startable {
             user = organizationService.getUserHandler().findUserByName(username);
             // The directory may return the username with another letter case:
             // ask it directly before considering the user as deleted
-            if (!user.isInternalStore() && !externalStoreService.isEntityPresent(IDMEntityType.USER, username)) {
+            if (!user.isInternalStore() && mayBeDeletedFromExternalStore(username)) {
               deletionConsumer.accept(username);
             }
           }
@@ -707,6 +707,23 @@ public class IDMExternalStoreImportService implements Startable {
     User user = username == null ? null : findInternalUser(username, internalUsers);
     return membership.getMembershipType() + ":" + (user == null ? username : user.getUserName()) + ":"
         + membership.getGroupId();
+  }
+
+  /**
+   * @return true when the directory does not hold the user, or when it could
+   *         not be asked: processing the queued entry asks it again and retries
+   *         on failure, so one failing lookup never stops the check of the other
+   *         users
+   */
+  private boolean mayBeDeletedFromExternalStore(String username) {
+    try {
+      return !externalStoreService.isEntityPresent(IDMEntityType.USER, username);
+    } catch (Exception e) {
+      LOG.warn("Can't check whether user '{}' is present in external store, it will be checked again when its queue entry is processed",
+               username,
+               e);
+      return true;
+    }
   }
 
   private User findInternalUser(String username, Map<String, User> internalUsers) throws Exception {
