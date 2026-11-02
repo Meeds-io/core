@@ -411,11 +411,11 @@ public class IDMExternalStoreImportServiceTest {
   @Test
   public void checkDeletedUsersIgnoresUserWhoseDirectoryNameDiffersInCase() throws Exception {
     when(idmExternalStoreService.getManagedEntityTypes()).thenReturn(Set.of(IDMEntityType.USER));
-    ListAccess<User> internalUsers = mock(ListAccess.class);
-    when(internalUsers.getSize()).thenReturn(4);
-    when(internalUsers.load(0, 4)).thenReturn(new User[] { new UserImpl("john"), new UserImpl("testuser"), new UserImpl("gone"),
+    ListAccess<User> storedUsers = mock(ListAccess.class);
+    when(storedUsers.getSize()).thenReturn(4);
+    when(storedUsers.load(0, 4)).thenReturn(new User[] { new UserImpl("john"), new UserImpl("testuser"), new UserImpl("gone"),
         new UserImpl("root") });
-    when(idmExternalStoreService.getAllInternalUsers()).thenReturn(internalUsers);
+    when(idmExternalStoreService.getAllInternalUsers()).thenReturn(storedUsers);
     ListAccess<String> externalUsernames = mock(ListAccess.class);
     when(externalUsernames.load(0, Integer.MAX_VALUE)).thenReturn(new String[] { "john", "TESTUSER" });
     when(idmExternalStoreService.getAllOfType(IDMEntityType.USER, null)).thenReturn(externalUsernames);
