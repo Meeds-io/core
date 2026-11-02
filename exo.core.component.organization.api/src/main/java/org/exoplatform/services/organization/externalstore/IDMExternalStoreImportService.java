@@ -499,8 +499,8 @@ public class IDMExternalStoreImportService implements Startable {
       ListAccess<User> allStoredUsersInInternalStore = externalStoreService.getAllInternalUsers();
 
       LOG.info("Retrieving all existing external users");
-      List<String> externalUsernames = new ArrayList<>();
-      loadModifiedUsers(entityType, (username) -> externalUsernames.add(username), null);
+      Set<String> externalUsernames = new HashSet<>();
+      loadModifiedUsers(entityType, externalUsernames::add, null);
       LOG.info("{} users was retrieved from external store", externalUsernames.size());
 
       int totalUsers = allStoredUsersInInternalStore.getSize();
@@ -527,7 +527,9 @@ public class IDMExternalStoreImportService implements Startable {
             // username, we should retrieve it again from internal store with
             // all attributes
             user = organizationService.getUserHandler().findUserByName(username);
-            if (!user.isInternalStore()) {
+            // The directory may return the username with another letter case:
+            // ask it directly before considering the user as deleted
+            if (!user.isInternalStore() && !externalStoreService.isEntityPresent(IDMEntityType.USER, username)) {
               deletionConsumer.accept(username);
             }
           }
@@ -654,22 +656,23 @@ public class IDMExternalStoreImportService implements Startable {
     importMemberships(IDMEntityType.USER_MEMBERSHIPS, externalMemberships, internalMemberships, updateDeleted);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings("rawtypes")
   private void importMemberships(IDMEntityType<?> entityType,
                                  Collection externalMemberships,
                                  Collection internalMemberships,
                                  boolean updateDeleted) throws Exception {
+    // The directory and the internal store may spell the same username with a
+    // different letter case, thus memberships are compared using the username
+    // of the internal user that the name resolves to
+    Map<String, User> internalUsers = new HashMap<>();
+    Set<String> internalMembershipKeys = getMembershipKeys(internalMemberships, internalUsers);
+    Set<String> externalMembershipKeys = getMembershipKeys(externalMemberships, internalUsers);
     if (externalMemberships != null && !externalMemberships.isEmpty()) {
-      List membershipsToAdd = new ArrayList(externalMemberships);
       for (Object object : externalMemberships) {
-        if (internalMemberships.contains(object)) {
-          membershipsToAdd.remove(object);
-        }
-      }
-
-      for (Object object : membershipsToAdd) {
         Membership membership = (Membership) object;
-        importMembership(entityType, membership, false, false);
+        if (!internalMembershipKeys.contains(getMembershipKey(membership, internalUsers))) {
+          importMembership(entityType, membership, internalUsers, false, false);
+        }
       }
     }
     if (updateDeleted) {
@@ -677,10 +680,10 @@ public class IDMExternalStoreImportService implements Startable {
       for (Object object : internalMemberships) {
         Membership membership = (Membership) object;
         Group group = organizationService.getGroupHandler().findGroupById(membership.getGroupId());
-        User user = organizationService.getUserHandler().findUserByName(membership.getUserName(), UserStatus.ANY);
+        User user = findInternalUser(membership.getUserName(), internalUsers);
 
         if (group == null || user == null || (!group.isInternalStore() && !user.isInternalStore()
-            && (externalMemberships == null || !externalMemberships.contains(membership)))) {
+            && !externalMembershipKeys.contains(getMembershipKey(membership, internalUsers)))) {
           LOG.trace("Remove deleted membership from external store '{}'", membership);
           organizationService.getMembershipHandler().removeMembership(membership.getId(), true);
         }
@@ -688,8 +691,37 @@ public class IDMExternalStoreImportService implements Startable {
     }
   }
 
+  @SuppressWarnings("rawtypes")
+  private Set<String> getMembershipKeys(Collection memberships, Map<String, User> internalUsers) throws Exception {
+    Set<String> membershipKeys = new HashSet<>();
+    if (memberships != null) {
+      for (Object object : memberships) {
+        membershipKeys.add(getMembershipKey((Membership) object, internalUsers));
+      }
+    }
+    return membershipKeys;
+  }
+
+  private String getMembershipKey(Membership membership, Map<String, User> internalUsers) throws Exception {
+    String username = membership.getUserName();
+    User user = username == null ? null : findInternalUser(username, internalUsers);
+    return membership.getMembershipType() + ":" + (user == null ? username : user.getUserName()) + ":"
+        + membership.getGroupId();
+  }
+
+  private User findInternalUser(String username, Map<String, User> internalUsers) throws Exception {
+    // A null value caches a lookup that found no user
+    if (internalUsers.containsKey(username)) {
+      return internalUsers.get(username);
+    }
+    User user = organizationService.getUserHandler().findUserByName(username, UserStatus.ANY);
+    internalUsers.put(username, user);
+    return user;
+  }
+
   private void importMembership(IDMEntityType<?> entityType,
                                 Membership membership,
+                                Map<String, User> internalUsers,
                                 boolean updateModified,
                                 boolean updateDeleted) throws Exception {
     String groupId = membership.getGroupId();
@@ -707,9 +739,11 @@ public class IDMExternalStoreImportService implements Startable {
       }
     }
 
-    User user = organizationService.getUserHandler().findUserByName(membership.getUserName(), UserStatus.ANY);
+    User user = findInternalUser(membership.getUserName(), internalUsers);
     if (user == null) {
       user = importEntityToInternalStore(IDMEntityType.USER, membership.getUserName(), updateModified, updateDeleted);
+      // the user's other memberships in this import reuse the imported user
+      internalUsers.put(membership.getUserName(), user);
       if (user == null) {
         // The subGroup of a Group can sometimes be retrieved as child user
         // member Which could lead to this use case. The following check is
