@@ -484,13 +484,16 @@ public class IDMExternalStoreImportServiceTest {
     IDMQueueEntry entry = new IDMQueueEntry(IDMEntityType.USER, "failing", IDMOperationType.DELETE);
     when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER,
                                                  "failing")).thenThrow(new RuntimeException("Operation error on LDAP store"));
+    // the internal user exists, so a lookup failure read as "absent" would
+    // remove or disable it; lenient because the failing lookup runs first
+    lenient().when(userHandler.findUserByName("failing", UserStatus.ANY)).thenReturn(externalUser("failing"));
 
     List<IDMQueueEntry> treatedEntries = processQueueEntries(entry);
 
-    assertEquals(List.of(), treatedEntries);
-    verify(idmQueueService).incrementRetry(List.of(entry));
     verify(userHandler, never()).removeUser(anyString(), anyBoolean());
     verify(userHandler, never()).setEnabled(anyString(), anyBoolean(), anyBoolean());
+    verify(idmQueueService).incrementRetry(List.of(entry));
+    assertEquals(List.of(), treatedEntries);
   }
 
   @SuppressWarnings("unchecked")
