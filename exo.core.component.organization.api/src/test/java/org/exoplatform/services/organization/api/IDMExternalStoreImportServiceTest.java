@@ -40,7 +40,10 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.organization.externalstore.IDMExternalStoreImportService;
 import org.exoplatform.services.organization.externalstore.IDMExternalStoreService;
+import org.exoplatform.services.organization.externalstore.IDMQueueService;
 import org.exoplatform.services.organization.externalstore.model.IDMEntityType;
+import org.exoplatform.services.organization.externalstore.model.IDMOperationType;
+import org.exoplatform.services.organization.externalstore.model.IDMQueueEntry;
 import org.exoplatform.services.organization.impl.GroupImpl;
 import org.exoplatform.services.organization.impl.MembershipImpl;
 import org.exoplatform.services.organization.impl.MembershipTypeImpl;
@@ -60,6 +63,9 @@ public class IDMExternalStoreImportServiceTest {
 
   @Mock
   private ListenerService               listenerService;
+
+  @Mock
+  private IDMQueueService               idmQueueService;
 
   private IDMExternalStoreImportService idmExternalStoreImportService;
 
@@ -98,7 +104,7 @@ public class IDMExternalStoreImportServiceTest {
                                                                            listenerService,
                                                                            idmExternalStoreService,
                                                                            null,
-                                                                           null,
+                                                                           idmQueueService,
                                                                            initParams);
   }
 
@@ -457,6 +463,41 @@ public class IDMExternalStoreImportServiceTest {
     // the user whose lookup failed is queued to be checked again, and the next
     // user is still checked
     assertEquals(List.of("failing", "gone"), deletedUsernames);
+  }
+
+  @Test
+  public void processQueueEntriesKeepsUserQueuedAsDeletedWhileTheDirectoryHoldsThem() throws Exception {
+    IDMQueueEntry entry = new IDMQueueEntry(IDMEntityType.USER, "testuser", IDMOperationType.DELETE);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "testuser")).thenReturn(true);
+    when(userHandler.findUserByName("testuser", UserStatus.ANY)).thenReturn(externalUser("testuser"));
+
+    List<IDMQueueEntry> treatedEntries = processQueueEntries(entry);
+
+    assertEquals(List.of(entry), treatedEntries);
+    verify(userHandler, never()).removeUser(anyString(), anyBoolean());
+    verify(userHandler, never()).setEnabled(anyString(), anyBoolean(), anyBoolean());
+    verify(idmQueueService, never()).incrementRetry(any());
+  }
+
+  @Test
+  public void processQueueEntriesRetriesUserQueuedAsDeletedWhenTheDirectoryLookupFails() throws Exception {
+    IDMQueueEntry entry = new IDMQueueEntry(IDMEntityType.USER, "failing", IDMOperationType.DELETE);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER,
+                                                 "failing")).thenThrow(new RuntimeException("Operation error on LDAP store"));
+
+    List<IDMQueueEntry> treatedEntries = processQueueEntries(entry);
+
+    assertEquals(List.of(), treatedEntries);
+    verify(idmQueueService).incrementRetry(List.of(entry));
+    verify(userHandler, never()).removeUser(anyString(), anyBoolean());
+    verify(userHandler, never()).setEnabled(anyString(), anyBoolean(), anyBoolean());
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<IDMQueueEntry> processQueueEntries(IDMQueueEntry... entries) throws Exception {
+    Method processQueueEntriesMethod = IDMExternalStoreImportService.class.getDeclaredMethod("processQueueEntries", List.class);
+    processQueueEntriesMethod.setAccessible(true);
+    return (List<IDMQueueEntry>) processQueueEntriesMethod.invoke(idmExternalStoreImportService, List.of(entries));
   }
 
   /**
