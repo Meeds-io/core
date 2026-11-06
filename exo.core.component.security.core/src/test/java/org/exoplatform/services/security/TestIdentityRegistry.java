@@ -21,18 +21,24 @@ package org.exoplatform.services.security;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.cache.CacheService;
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.cache.ExoCacheConfigPlugin;
 import org.exoplatform.services.cache.concurrent.ConcurrentFIFOExoCache;
+import org.exoplatform.services.listener.ListenerService;
 
 /**
- * In a cluster, a node registers the identities of its own requests, and an
- * unregistration reaches every node.
+ * In a cluster, a node registers the identities of its own requests and
+ * unregisters them when its last conversation of the user ends; a change of
+ * the user's memberships unregisters them on every node.
  */
 public class TestIdentityRegistry extends TestCase {
 
@@ -40,10 +46,14 @@ public class TestIdentityRegistry extends TestCase {
 
   private IdentityRegistry registry;
 
+  private CacheService     cacheService;
+
   @Override
   protected void setUp() {
     cache = new RecordingCache();
-    registry = new IdentityRegistry(new CacheService() {
+    Map<String, ExoCache<? extends Serializable, ?>> caches = new HashMap<>();
+    caches.put("portal.IdentityRegistry", cache);
+    cacheService = new CacheService() {
       @Override
       public void addExoCacheConfig(ExoCacheConfigPlugin plugin) {
         // Not used
@@ -52,14 +62,15 @@ public class TestIdentityRegistry extends TestCase {
       @Override
       @SuppressWarnings("unchecked")
       public <K extends Serializable, V> ExoCache<K, V> getCacheInstance(String region) {
-        return (ExoCache<K, V>) cache;
+        return (ExoCache<K, V>) caches.computeIfAbsent(region, name -> new ConcurrentFIFOExoCache<>(name, 100));
       }
 
       @Override
       public Collection<ExoCache<? extends Serializable, ?>> getAllCacheInstances() {
-        return List.of(cache);
+        return caches.values();
       }
-    });
+    };
+    registry = new IdentityRegistry(cacheService);
   }
 
   public void testARegistrationStaysOnTheNodeThatMadeIt() {
@@ -77,6 +88,26 @@ public class TestIdentityRegistry extends TestCase {
     registry.unregister("john");
 
     assertEquals(List.of("putLocal john", "remove john"), cache.calls);
+    assertNull(registry.getIdentity("john"));
+  }
+
+  public void testTheEndOfTheLastConversationOfANodeUnregistersOnThatNodeOnly() {
+    ConversationRegistry conversations =
+                                       new ConversationRegistry(registry,
+                                                                new ListenerService(new ExoContainerContext(new ExoContainer())),
+                                                                cacheService);
+    Identity identity = new Identity("john");
+    registry.register(identity);
+    StateKey first = new SimpleStateKey("first");
+    StateKey second = new SimpleStateKey("second");
+    conversations.register(first, new ConversationState(identity));
+    conversations.register(second, new ConversationState(identity));
+
+    conversations.unregister(first);
+    assertEquals(List.of("putLocal john"), cache.calls);
+
+    conversations.unregister(second);
+    assertEquals(List.of("putLocal john", "removeLocal john"), cache.calls);
     assertNull(registry.getIdentity("john"));
   }
 
@@ -104,6 +135,12 @@ public class TestIdentityRegistry extends TestCase {
     public Identity remove(Serializable key) {
       calls.add("remove " + key);
       return super.remove(key);
+    }
+
+    @Override
+    public void removeLocal(Serializable key) {
+      calls.add("removeLocal " + key);
+      super.remove(key);
     }
   }
 }
