@@ -66,6 +66,17 @@ public class IdentityRegistry {
   }
 
   /**
+   * Remove identity with supplied user ID, on this node only: the end of the
+   * last conversation of a user on a node leaves the identities the other
+   * nodes registered for their own conversations.
+   *
+   * @param userId user ID
+   */
+  public void unregisterLocal(String userId) {
+    this.identitiesCache.removeLocal(userId);
+  }
+
+  /**
    * Remove all identities.
    */
   void clear() {
