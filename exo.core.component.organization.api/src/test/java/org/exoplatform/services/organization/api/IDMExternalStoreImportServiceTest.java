@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.organization.api;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.exoplatform.services.organization.*;
 import org.junit.Before;
@@ -34,16 +34,26 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.organization.externalstore.IDMExternalStoreImportService;
 import org.exoplatform.services.organization.externalstore.IDMExternalStoreService;
+import org.exoplatform.services.organization.externalstore.IDMQueueService;
 import org.exoplatform.services.organization.externalstore.model.IDMEntityType;
+import org.exoplatform.services.organization.externalstore.model.IDMOperationType;
+import org.exoplatform.services.organization.externalstore.model.IDMQueueEntry;
+import org.exoplatform.services.organization.impl.GroupImpl;
+import org.exoplatform.services.organization.impl.MembershipImpl;
+import org.exoplatform.services.organization.impl.MembershipTypeImpl;
+import org.exoplatform.services.organization.impl.UserImpl;
 import org.exoplatform.services.organization.impl.UserProfileImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IDMExternalStoreImportServiceTest {
+
+  private static final String           GROUP_ID = "/ldap-groups/G1";
 
   @Mock
   private InitParams                            initParams;
@@ -54,11 +64,24 @@ public class IDMExternalStoreImportServiceTest {
   @Mock
   private ListenerService               listenerService;
 
+  @Mock
+  private IDMQueueService               idmQueueService;
+
   private IDMExternalStoreImportService idmExternalStoreImportService;
 
   private OrganizationService           organizationService;
 
   private UserProfileHandler            profileHandler;
+
+  private UserHandler                   userHandler;
+
+  private MembershipHandler             membershipHandler;
+
+  private Group                         group;
+
+  private MembershipType                membershipType;
+
+  private Map<String, User>             internalUsers;
 
   @Before
   public void setUp() throws Exception {
@@ -70,7 +93,7 @@ public class IDMExternalStoreImportServiceTest {
     StandaloneContainer container = StandaloneContainer.getInstance();
 
     organizationService = mock(OrganizationService.class);
-    UserHandler userHandler = mock(UserHandler.class);
+    userHandler = mock(UserHandler.class);
     when(organizationService.getUserHandler()).thenReturn(userHandler);
 
     profileHandler = mock(UserProfileHandler.class);
@@ -81,7 +104,7 @@ public class IDMExternalStoreImportServiceTest {
                                                                            listenerService,
                                                                            idmExternalStoreService,
                                                                            null,
-                                                                           null,
+                                                                           idmQueueService,
                                                                            initParams);
   }
 
@@ -183,6 +206,341 @@ public class IDMExternalStoreImportServiceTest {
 
     assertNull(result);
     verify(organizationService.getUserHandler(), never()).createUser(any(User.class), anyBoolean());
+  }
+
+  @Test
+  public void importGroupMembershipsKeepsUserWhoseDirectoryNameDiffersInCase() throws Exception {
+    mockMembershipStores("testuser");
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of(membership("testuser")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID)).thenReturn(List.of(membership("TESTUSER")));
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(membershipHandler, never()).removeMembership(anyString(), anyBoolean());
+    verify(membershipHandler, never()).linkMembership(any(), any(), any(), anyBoolean());
+    // each spelling is resolved once per import
+    verify(userHandler).findUserByName("testuser", UserStatus.ANY);
+    verify(userHandler).findUserByName("TESTUSER", UserStatus.ANY);
+  }
+
+  @Test
+  public void importGroupMembershipsAddsMissingMembershipOfUserWhoseDirectoryNameDiffersInCase() throws Exception {
+    mockMembershipStores("testuser");
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of());
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID)).thenReturn(List.of(membership("TESTUSER")));
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(membershipHandler).linkMembership(argThat(user -> "testuser".equals(user.getUserName())),
+                                             eq(group),
+                                             eq(membershipType),
+                                             eq(true));
+    verify(membershipHandler, never()).removeMembership(anyString(), anyBoolean());
+  }
+
+  @Test
+  public void importGroupMembershipsRemovesMembershipOfUserWhoseDirectoryNameDiffersInCase() throws Exception {
+    mockMembershipStores("testuser", "mary");
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of(membership("testuser"), membership("mary")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID)).thenReturn(List.of(membership("MARY")));
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(membershipHandler).removeMembership(membership("testuser").getId(), true);
+    verify(membershipHandler, never()).removeMembership(membership("mary").getId(), true);
+    verify(membershipHandler, never()).linkMembership(any(), any(), any(), anyBoolean());
+  }
+
+  @Test
+  public void importGroupMembershipsAppliesRoleChangedInDirectoryForUserWhoseNameDiffersInCase() throws Exception {
+    mockMembershipStores("testuser");
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of(membership("testuser")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS,
+                                           GROUP_ID)).thenReturn(List.of(new MembershipImpl("manager", "TESTUSER", GROUP_ID, false)));
+    MembershipType managerType = new MembershipTypeImpl("manager", null, null);
+    when(organizationService.getMembershipTypeHandler().findMembershipType("manager")).thenReturn(managerType);
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(membershipHandler).linkMembership(argThat(user -> "testuser".equals(user.getUserName())),
+                                             eq(group),
+                                             eq(managerType),
+                                             eq(true));
+    verify(membershipHandler).removeMembership(membership("testuser").getId(), true);
+  }
+
+  @Test
+  public void importUserMembershipsRemovesGroupDroppedFromDirectoryForUserWhoseNameDiffersInCase() throws Exception {
+    mockMembershipStores("testuser");
+    String otherGroupId = "/ldap-groups/G2";
+    GroupImpl otherGroup = new GroupImpl("G2");
+    otherGroup.setId(otherGroupId);
+    otherGroup.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
+    when(organizationService.getGroupHandler().findGroupById(otherGroupId)).thenReturn(otherGroup);
+    Membership otherGroupMembership = new MembershipImpl("member", "testuser", otherGroupId, false);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER_MEMBERSHIPS, "TESTUSER")).thenReturn(true);
+    when(membershipHandler.findMembershipsByUser("TESTUSER")).thenReturn(List.of(membership("testuser"), otherGroupMembership));
+    when(idmExternalStoreService.getEntity(IDMEntityType.USER_MEMBERSHIPS, "TESTUSER")).thenReturn(Set.of(membership("TESTUSER")));
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.USER_MEMBERSHIPS, "TESTUSER", true, true);
+
+    verify(membershipHandler).removeMembership(otherGroupMembership.getId(), true);
+    verify(membershipHandler, never()).removeMembership(membership("testuser").getId(), true);
+    verify(membershipHandler, never()).linkMembership(any(), any(), any(), anyBoolean());
+  }
+
+  @Test
+  public void importUserMembershipsKeepsUserWhoseDirectoryNameDiffersInCase() throws Exception {
+    mockMembershipStores("testuser");
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER_MEMBERSHIPS, "TESTUSER")).thenReturn(true);
+    when(membershipHandler.findMembershipsByUser("TESTUSER")).thenReturn(List.of(membership("testuser")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.USER_MEMBERSHIPS, "TESTUSER")).thenReturn(Set.of(membership("TESTUSER")));
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.USER_MEMBERSHIPS, "TESTUSER", true, true);
+
+    verify(membershipHandler, never()).removeMembership(anyString(), anyBoolean());
+    verify(membershipHandler, never()).linkMembership(any(), any(), any(), anyBoolean());
+  }
+
+  @Test
+  public void importGroupMembershipsKeepsUserWhoseDirectoryNameMatches() throws Exception {
+    mockMembershipStores("john");
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of(membership("john")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID)).thenReturn(List.of(membership("john")));
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(membershipHandler, never()).removeMembership(anyString(), anyBoolean());
+    verify(membershipHandler, never()).linkMembership(any(), any(), any(), anyBoolean());
+  }
+
+  @Test
+  public void importGroupMembershipsRemovesMembershipDeletedFromDirectory() throws Exception {
+    mockMembershipStores("testuser", "mary");
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of(membership("testuser"), membership("mary")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID)).thenReturn(List.of(membership("TESTUSER")));
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(membershipHandler).removeMembership(membership("mary").getId(), true);
+    verify(membershipHandler, never()).removeMembership(membership("testuser").getId(), true);
+    verify(membershipHandler, never()).linkMembership(any(), any(), any(), anyBoolean());
+  }
+
+  @Test
+  public void importGroupMembershipsAddsMembershipAddedInDirectory() throws Exception {
+    mockMembershipStores("testuser", "mary");
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of(membership("testuser")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS,
+                                           GROUP_ID)).thenReturn(List.of(membership("TESTUSER"), membership("MARY")));
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(membershipHandler).linkMembership(argThat(user -> "mary".equals(user.getUserName())),
+                                             eq(group),
+                                             eq(membershipType),
+                                             eq(true));
+    verify(membershipHandler, never()).linkMembership(argThat(user -> "testuser".equals(user.getUserName())),
+                                                      any(),
+                                                      any(),
+                                                      anyBoolean());
+    verify(membershipHandler, never()).removeMembership(anyString(), anyBoolean());
+    // the added membership's user is resolved once per import
+    verify(userHandler).findUserByName("MARY", UserStatus.ANY);
+  }
+
+  @Test
+  public void importGroupMembershipsImportsUserNotYetInInternalStore() throws Exception {
+    mockMembershipStores("testuser");
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of(membership("testuser")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS,
+                                           GROUP_ID)).thenReturn(List.of(membership("TESTUSER"), membership("newuser")));
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "newuser")).thenReturn(false);
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(idmExternalStoreService).isEntityPresent(IDMEntityType.USER, "newuser");
+    verify(idmExternalStoreService, never()).isEntityPresent(IDMEntityType.USER, "TESTUSER");
+    verify(membershipHandler, never()).removeMembership(anyString(), anyBoolean());
+    // a lookup that found no user is not repeated
+    verify(userHandler).findUserByName("newuser", UserStatus.ANY);
+  }
+
+  /**
+   * An internal membership whose user the internal store does not resolve (it
+   * answers no user, as its case-insensitive search does when two accounts'
+   * usernames differ only in letter case) is compared on its raw username.
+   */
+  @Test
+  public void importGroupMembershipsImportsDirectoryMemberBesideUnresolvedInternalMembership() throws Exception {
+    mockMembershipStores();
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of(membership("ghost")));
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID)).thenReturn(List.of(membership("newuser")));
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "newuser")).thenReturn(false);
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    verify(idmExternalStoreService).isEntityPresent(IDMEntityType.USER, "newuser");
+    verify(membershipHandler).removeMembership(membership("ghost").getId(), true);
+  }
+
+  @Test
+  public void importGroupMembershipsImportsNewUserOnceForAllTheirMemberships() throws Exception {
+    mockMembershipStores();
+    when(membershipHandler.findMembershipsByGroup(group)).thenReturn(List.of());
+    when(idmExternalStoreService.getEntity(IDMEntityType.GROUP_MEMBERSHIPS,
+                                           GROUP_ID)).thenReturn(List.of(membership("newuser"),
+                                                                         new MembershipImpl("manager", "newuser", GROUP_ID, false)));
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "newuser")).thenReturn(true);
+    when(idmExternalStoreService.getEntity(IDMEntityType.USER, "newuser")).thenReturn(new UserImpl("newuser"));
+    doAnswer(invocation -> internalUsers.put("newuser", invocation.getArgument(0))).when(userHandler)
+                                                                                   .createUser(any(User.class), eq(true));
+    MembershipType managerType = new MembershipTypeImpl("manager", null, null);
+    when(organizationService.getMembershipTypeHandler().findMembershipType("manager")).thenReturn(managerType);
+
+    idmExternalStoreImportService.importEntityToInternalStore(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID, true, true);
+
+    // the user imported for its first membership is reused for the second one
+    verify(idmExternalStoreService).isEntityPresent(IDMEntityType.USER, "newuser");
+    verify(userHandler).createUser(argThat(user -> "newuser".equals(user.getUserName())), eq(true));
+    verify(membershipHandler).linkMembership(argThat(user -> "newuser".equals(user.getUserName())),
+                                             eq(group),
+                                             eq(membershipType),
+                                             eq(true));
+    verify(membershipHandler).linkMembership(argThat(user -> "newuser".equals(user.getUserName())),
+                                             eq(group),
+                                             eq(managerType),
+                                             eq(true));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void checkDeletedUsersIgnoresUserWhoseDirectoryNameDiffersInCase() throws Exception {
+    when(idmExternalStoreService.getManagedEntityTypes()).thenReturn(Set.of(IDMEntityType.USER));
+    ListAccess<User> storedUsers = mock(ListAccess.class);
+    when(storedUsers.getSize()).thenReturn(4);
+    when(storedUsers.load(0, 4)).thenReturn(new User[] { new UserImpl("john"), new UserImpl("testuser"), new UserImpl("gone"),
+        new UserImpl("root") });
+    when(idmExternalStoreService.getAllInternalUsers()).thenReturn(storedUsers);
+    ListAccess<String> externalUsernames = mock(ListAccess.class);
+    when(externalUsernames.load(0, Integer.MAX_VALUE)).thenReturn(new String[] { "john", "TESTUSER" });
+    when(idmExternalStoreService.getAllOfType(IDMEntityType.USER, null)).thenReturn(externalUsernames);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "testuser")).thenReturn(true);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "gone")).thenReturn(false);
+    when(userHandler.findUserByName("gone")).thenReturn(externalUser("gone"));
+    when(userHandler.findUserByName("testuser")).thenReturn(externalUser("testuser"));
+    when(userHandler.findUserByName("root")).thenReturn(new UserImpl("root"));
+
+    List<String> deletedUsernames = new ArrayList<>();
+    idmExternalStoreImportService.checkDeletedEntitiesOfType(IDMEntityType.USER, deletedUsernames::add);
+
+    assertEquals(List.of("gone"), deletedUsernames);
+    verify(idmExternalStoreService, never()).isEntityPresent(IDMEntityType.USER, "john");
+    // a user created in eXo is never searched in the directory
+    verify(idmExternalStoreService, never()).isEntityPresent(IDMEntityType.USER, "root");
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void checkDeletedUsersQueuesUserWhoseDirectoryLookupFailsAndChecksTheNextOne() throws Exception {
+    when(idmExternalStoreService.getManagedEntityTypes()).thenReturn(Set.of(IDMEntityType.USER));
+    ListAccess<User> storedUsers = mock(ListAccess.class);
+    when(storedUsers.getSize()).thenReturn(2);
+    when(storedUsers.load(0, 2)).thenReturn(new User[] { new UserImpl("failing"), new UserImpl("gone") });
+    when(idmExternalStoreService.getAllInternalUsers()).thenReturn(storedUsers);
+    ListAccess<String> externalUsernames = mock(ListAccess.class);
+    when(externalUsernames.load(0, Integer.MAX_VALUE)).thenReturn(new String[] { "john" });
+    when(idmExternalStoreService.getAllOfType(IDMEntityType.USER, null)).thenReturn(externalUsernames);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER,
+                                                 "failing")).thenThrow(new RuntimeException("Operation error on LDAP store"));
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "gone")).thenReturn(false);
+    when(userHandler.findUserByName("failing")).thenReturn(externalUser("failing"));
+    when(userHandler.findUserByName("gone")).thenReturn(externalUser("gone"));
+
+    List<String> deletedUsernames = new ArrayList<>();
+    idmExternalStoreImportService.checkDeletedEntitiesOfType(IDMEntityType.USER, deletedUsernames::add);
+
+    // the user whose lookup failed is queued to be checked again, and the next
+    // user is still checked
+    assertEquals(List.of("failing", "gone"), deletedUsernames);
+  }
+
+  @Test
+  public void processQueueEntriesKeepsUserQueuedAsDeletedWhileTheDirectoryHoldsThem() throws Exception {
+    IDMQueueEntry entry = new IDMQueueEntry(IDMEntityType.USER, "testuser", IDMOperationType.DELETE);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER, "testuser")).thenReturn(true);
+    when(userHandler.findUserByName("testuser", UserStatus.ANY)).thenReturn(externalUser("testuser"));
+
+    List<IDMQueueEntry> treatedEntries = processQueueEntries(entry);
+
+    assertEquals(List.of(entry), treatedEntries);
+    verify(userHandler, never()).removeUser(anyString(), anyBoolean());
+    verify(userHandler, never()).setEnabled(anyString(), anyBoolean(), anyBoolean());
+    verify(idmQueueService, never()).incrementRetry(any());
+  }
+
+  @Test
+  public void processQueueEntriesRetriesUserQueuedAsDeletedWhenTheDirectoryLookupFails() throws Exception {
+    IDMQueueEntry entry = new IDMQueueEntry(IDMEntityType.USER, "failing", IDMOperationType.DELETE);
+    when(idmExternalStoreService.isEntityPresent(IDMEntityType.USER,
+                                                 "failing")).thenThrow(new RuntimeException("Operation error on LDAP store"));
+    // the internal user exists, so a lookup failure read as "absent" would
+    // remove or disable it; lenient because the failing lookup runs first
+    lenient().when(userHandler.findUserByName("failing", UserStatus.ANY)).thenReturn(externalUser("failing"));
+
+    List<IDMQueueEntry> treatedEntries = processQueueEntries(entry);
+
+    verify(userHandler, never()).removeUser(anyString(), anyBoolean());
+    verify(userHandler, never()).setEnabled(anyString(), anyBoolean(), anyBoolean());
+    verify(idmQueueService).incrementRetry(List.of(entry));
+    assertEquals(List.of(), treatedEntries);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<IDMQueueEntry> processQueueEntries(IDMQueueEntry... entries) throws Exception {
+    Method processQueueEntriesMethod = IDMExternalStoreImportService.class.getDeclaredMethod("processQueueEntries", List.class);
+    processQueueEntriesMethod.setAccessible(true);
+    return (List<IDMQueueEntry>) processQueueEntriesMethod.invoke(idmExternalStoreImportService, List.of(entries));
+  }
+
+  /**
+   * Mocks the internal store with its default case-insensitive user search
+   * (exo.idm.search.notCaseSensitive=true): a username lookup ignores the
+   * letter case and returns the user with the username it was stored with.
+   */
+  private void mockMembershipStores(String... internalUsernames) throws Exception {
+    group = new GroupImpl("G1");
+    ((GroupImpl) group).setId(GROUP_ID);
+    group.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
+    GroupHandler groupHandler = mock(GroupHandler.class);
+    when(organizationService.getGroupHandler()).thenReturn(groupHandler);
+    when(groupHandler.findGroupById(GROUP_ID)).thenReturn(group);
+    membershipHandler = mock(MembershipHandler.class);
+    when(organizationService.getMembershipHandler()).thenReturn(membershipHandler);
+    lenient().when(idmExternalStoreService.isEntityPresent(IDMEntityType.GROUP_MEMBERSHIPS, GROUP_ID)).thenReturn(true);
+    MembershipTypeHandler membershipTypeHandler = mock(MembershipTypeHandler.class);
+    lenient().when(organizationService.getMembershipTypeHandler()).thenReturn(membershipTypeHandler);
+    membershipType = new MembershipTypeImpl("member", null, null);
+    lenient().when(membershipTypeHandler.findMembershipType("member")).thenReturn(membershipType);
+
+    internalUsers = new HashMap<>();
+    for (String internalUsername : internalUsernames) {
+      internalUsers.put(internalUsername.toLowerCase(), externalUser(internalUsername));
+    }
+    when(userHandler.findUserByName(anyString(),
+                                    eq(UserStatus.ANY))).thenAnswer(invocation -> internalUsers.get(invocation.getArgument(0,
+                                                                                                                   String.class)
+                                                                                                    .toLowerCase()));
+  }
+
+  private User externalUser(String username) {
+    User user = new UserImpl(username);
+    user.setOriginatingStore(OrganizationService.EXTERNAL_STORE);
+    return user;
+  }
+
+  private Membership membership(String username) {
+    return new MembershipImpl("member", username, GROUP_ID, false);
   }
 
 }
