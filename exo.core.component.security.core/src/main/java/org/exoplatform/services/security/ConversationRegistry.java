@@ -124,7 +124,9 @@ public final class ConversationRegistry {
       String userId = state.getIdentity().getUserId();
       removeStateKey(userId, key);
       if (unregisterIdentity && CollectionUtils.isEmpty(stateKeysCache.get(userId))) {
-        identityRegistry.unregister(userId);
+        // The states of a node are its own: the other nodes keep the identity
+        // of the conversations they hold
+        identityRegistry.unregisterLocal(userId);
       }
       try {
         listenerService.broadcast("exo.core.security.ConversationRegistry.unregister", this, state);
