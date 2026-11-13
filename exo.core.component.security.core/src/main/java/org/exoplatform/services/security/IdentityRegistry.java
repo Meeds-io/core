@@ -44,21 +44,36 @@ public class IdentityRegistry {
   }
 
   /**
-   * Register new identity in registry.
-   * 
+   * Register new identity in registry, on this node only: each node registers
+   * the identities of its own requests, and an identity built by another node
+   * differs from it (the subject of its login), which would remove it there.
+   *
    * @param identity {@link Identity}
    */
   public void register(Identity identity) {
-    this.identitiesCache.put(identity.getUserId(), identity);
+    this.identitiesCache.putLocal(identity.getUserId(), identity);
   }
 
   /**
-   * Remove identity with supplied user ID.
-   * 
+   * Remove identity with supplied user ID, from every node of a cluster: a
+   * change of the user's memberships reaches the identities the other nodes
+   * registered.
+   *
    * @param userId user ID
    */
   public void unregister(String userId) {
     this.identitiesCache.remove(userId);
+  }
+
+  /**
+   * Remove identity with supplied user ID, on this node only: the end of the
+   * last conversation of a user on a node leaves the identities the other
+   * nodes registered for their own conversations.
+   *
+   * @param userId user ID
+   */
+  public void unregisterLocal(String userId) {
+    this.identitiesCache.removeLocal(userId);
   }
 
   /**
