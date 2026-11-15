@@ -23,6 +23,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,21 +47,69 @@ public final class ConversationRegistry {
 
   private static final String                         STATE_KEYS_NAME = "portal.ConversationRegistryStates";
 
+  private static final String                         USERS_NAME      = "portal.ConversationRegistryUsers";
+
+  /**
+   * The generation of the user's record a conversation was registered under
+   */
+  private static final String                         GENERATION      = "exo.core.security.ConversationRegistry.generation";
+
+  /**
+   * How long after a change of the user its record and identity are removed
+   * once more: a conversation another node built from the user as it was
+   * before the change committed, and registered after the removal reached
+   * it, is built again then. Longer than building a conversation takes.
+   */
+  static final long                                   REINVALIDATION_DELAY_SECONDS = 10;
+
+  private static final ScheduledExecutorService       REINVALIDATION  = Executors.newSingleThreadScheduledExecutor(task -> {
+                                                                        Thread thread = new Thread(task,
+                                                                                                   "ConversationRegistry-reinvalidation");
+                                                                        thread.setDaemon(true);
+                                                                        return thread;
+                                                                      });
+
   private static final Log                            LOG             = ExoLogger.getLogger(ConversationRegistry.class);
 
   private final ExoCache<StateKey, ConversationState> statesCache;
 
   private final ExoCache<String, Set<StateKey>>       stateKeysCache;
 
+  /**
+   * The generation of each user whose conversations, or other state derived
+   * from the user ({@link #getUserGeneration(String)}), this node holds: an
+   * entry is written on this node only, and removed on every node when the
+   * user's status or memberships change; a conversation registered under
+   * another generation is then built again, and other state is read again.
+   * An entry evicted for its size or its age has the same effect: the cache is
+   * declared at least as large and as long-lived as
+   * portal.ConversationRegistryStates
+   */
+  private final ExoCache<String, String>              usersCache;
+
   private final IdentityRegistry                      identityRegistry;
 
   private final ListenerService                       listenerService;
 
+  private final Consumer<Runnable>                    delayedRun;
+
   public ConversationRegistry(IdentityRegistry identityRegistry,
                               ListenerService listenerService,
                               CacheService cacheService) {
+    this(identityRegistry, listenerService, cacheService, delayedOn(REINVALIDATION));
+  }
+
+  /**
+   * @param delayedRun runs a task {@link #REINVALIDATION_DELAY_SECONDS} later
+   */
+  ConversationRegistry(IdentityRegistry identityRegistry,
+                       ListenerService listenerService,
+                       CacheService cacheService,
+                       Consumer<Runnable> delayedRun) {
+    this.delayedRun = delayedRun;
     this.statesCache = cacheService.getCacheInstance(CACHE_NAME);
     this.stateKeysCache = cacheService.getCacheInstance(STATE_KEYS_NAME);
+    this.usersCache = cacheService.getCacheInstance(USERS_NAME);
     this.identityRegistry = identityRegistry;
     this.listenerService = listenerService;
   }
@@ -68,7 +121,16 @@ public final class ConversationRegistry {
    * @return ConversationState.
    */
   public ConversationState getState(StateKey key) {
-    return statesCache.get(key);
+    ConversationState state = statesCache.get(key);
+    if (state != null && !isCurrent(state)) {
+      // The user changed on another node, or on this one: the conversation is
+      // no longer served, so that the next request builds it again from the
+      // user as stored and registers it in its place. Its session goes on: it
+      // stays registered until then, so that neither a logout nor a login is
+      // broadcast, and the end of the session still unregisters it
+      return null;
+    }
+    return state;
   }
 
   /**
@@ -86,6 +148,9 @@ public final class ConversationRegistry {
     // 2- user is not already logged-in (there is no registered state with the
     // same userID)
     boolean broadcast = statesCache.get(key) == null && StringUtils.isNotBlank(userId) && getStateKeys(userId).isEmpty();
+    if (StringUtils.isNotBlank(userId)) {
+      state.setAttribute(GENERATION, currentGeneration(userId));
+    }
     statesCache.put(key, state);
     addStateKey(userId, key);
     if (broadcast) { // NOSONAR
@@ -159,6 +224,41 @@ public final class ConversationRegistry {
   }
 
   /**
+   * Makes every node build the conversations of a user whose status or
+   * memberships changed again: the identity is unregistered and each node
+   * stops serving the user's conversations at its next read of each one, so
+   * the next request builds both again from the user as stored. Both are
+   * removed once more {@link #REINVALIDATION_DELAY_SECONDS} later, for a node
+   * that read the user before the change committed. The sessions go on:
+   * neither a logout nor a login is broadcast for them.
+   *
+   * @param userId user Id
+   */
+  public void invalidateUser(String userId) {
+    removeUser(userId);
+    delayedRun.accept(() -> {
+      try {
+        removeUser(userId);
+      } catch (Throwable e) { // NOSONAR a failure of this run must not be lost unseen
+        LOG.warn("Cannot invalidate once more the conversations of user {}", userId, e);
+      }
+    });
+  }
+
+  /**
+   * A holder of state derived from a user, such as an open real-time session,
+   * keeps the value this returns with that state, and reads the user again
+   * once it no longer matches: the value changes each time
+   * {@link #invalidateUser(String)} runs for the user, on any node.
+   *
+   * @param userId the user's identifier
+   * @return the user's current generation on this node
+   */
+  public String getUserGeneration(String userId) {
+    return currentGeneration(userId);
+  }
+
+  /**
    * @param userId the user's identifier.
    * @return list of users ConversationState.
    */
@@ -172,6 +272,42 @@ public final class ConversationRegistry {
   void clear() {
     statesCache.clearCache();
     stateKeysCache.clearCache();
+    usersCache.clearCache();
+  }
+
+  private boolean isCurrent(ConversationState state) {
+    String userId = state.getIdentity() == null ? null : state.getIdentity().getUserId();
+    if (StringUtils.isBlank(userId)) {
+      return true;
+    }
+    Object generation = state.getAttribute(GENERATION);
+    return generation != null && generation.equals(usersCache.get(userId));
+  }
+
+  /**
+   * @return the user's generation on this node, a new one when the record was
+   *         removed or never written
+   */
+  private String currentGeneration(String userId) {
+    String generation = usersCache.get(userId);
+    if (generation == null) {
+      generation = UUID.randomUUID().toString();
+      usersCache.putLocal(userId, generation);
+    }
+    return generation;
+  }
+
+  /**
+   * @param executor the scheduler the delayed removals run on
+   * @return what runs a task {@link #REINVALIDATION_DELAY_SECONDS} later on it
+   */
+  static Consumer<Runnable> delayedOn(ScheduledExecutorService executor) {
+    return task -> executor.schedule(task, REINVALIDATION_DELAY_SECONDS, TimeUnit.SECONDS);
+  }
+
+  private void removeUser(String userId) {
+    usersCache.remove(userId);
+    identityRegistry.unregister(userId);
   }
 
   private void removeStateKey(String userId, StateKey key) {
