@@ -29,11 +29,14 @@ public class MembershipUpdateListener extends MembershipEventListener {
 
   private final ConversationRegistry conversationRegistry;
 
-  private final IdentityRegistry     identityRegistry;
-
-  public MembershipUpdateListener(ConversationRegistry conversationRegistry, IdentityRegistry identityRegistry) {
+  /**
+   * @param conversationRegistry the registry whose invalidateUser also
+   *          unregisters the identity, on every node
+   * @param identityRegistry kept for the components that build this listener
+   *          with it
+   */
+  public MembershipUpdateListener(ConversationRegistry conversationRegistry, IdentityRegistry identityRegistry) { // NOSONAR
     this.conversationRegistry = conversationRegistry;
-    this.identityRegistry = identityRegistry;
   }
 
   @Override
@@ -47,9 +50,11 @@ public class MembershipUpdateListener extends MembershipEventListener {
   }
 
   private void refreshUserIdentity(String username) {
-    conversationRegistry.unregisterByUserId(username);
-    identityRegistry.unregister(username);
+    conversationRegistry.invalidateUser(username);
     restartTransaction();
+    // Once more after the commit: a node that read the memberships before it
+    // built its conversation again with the memberships as they were
+    conversationRegistry.invalidateUser(username);
   }
 
 }
