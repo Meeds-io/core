@@ -19,6 +19,8 @@
  */
 package org.exoplatform.services.security;
 
+import static org.junit.Assert.assertNotEquals;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -115,7 +117,7 @@ public class TestConversationRegistryInvalidation extends TestCase {
 
     nodeA.invalidateUser("john");
 
-    assertFalse(kept.equals(nodeB.getUserGeneration("john")));
+    assertNotEquals(kept, nodeB.getUserGeneration("john"));
     assertEquals("Other users keep theirs", maryKept, nodeB.getUserGeneration("mary"));
   }
 
@@ -257,18 +259,15 @@ public class TestConversationRegistryInvalidation extends TestCase {
    */
   public void testTheDelayedRemovalRunsTenSecondsLater() {
     List<Long> delays = new CopyOnWriteArrayList<>();
-    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1) {
+    try (ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1) {
       @Override
       public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
         delays.add(unit.toSeconds(delay));
         return null;
       }
-    };
-    try {
+    }) {
       ConversationRegistry.delayedOn(executor).accept(() -> {
       });
-    } finally {
-      executor.shutdownNow();
     }
 
     assertEquals(List.of(10L), delays);
