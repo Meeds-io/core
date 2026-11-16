@@ -262,8 +262,10 @@ public final class ConversationRegistry {
   /**
    * The keys of the user's conversations this node serves: a key whose
    * conversation is no longer current, after {@link #invalidateUser(String)},
-   * is left out until the next request of its session registers it again, so
-   * that {@link #getState(StateKey)} answers each key listed here.
+   * is left out until the next request of its session registers it again.
+   * The list holds the keys current when it is read: an invalidation or an
+   * eviction can still make {@link #getState(StateKey)} answer null for one of
+   * them afterwards, so a caller checks the state it reads.
    *
    * @param userId the user's identifier.
    * @return the keys of the user's current conversations on this node
