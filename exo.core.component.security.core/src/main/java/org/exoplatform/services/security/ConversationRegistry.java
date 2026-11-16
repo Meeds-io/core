@@ -147,7 +147,8 @@ public final class ConversationRegistry {
     // map keys
     // 2- user is not already logged-in (there is no registered state with the
     // same userID)
-    boolean broadcast = statesCache.get(key) == null && StringUtils.isNotBlank(userId) && getStateKeys(userId).isEmpty();
+    boolean broadcast = statesCache.get(key) == null && StringUtils.isNotBlank(userId)
+        && CollectionUtils.isEmpty(stateKeysCache.get(userId));
     if (StringUtils.isNotBlank(userId)) {
       state.setAttribute(GENERATION, currentGeneration(userId));
     }
@@ -259,11 +260,26 @@ public final class ConversationRegistry {
   }
 
   /**
+   * The keys of the user's conversations this node serves: a key whose
+   * conversation is no longer current, after {@link #invalidateUser(String)},
+   * is left out until the next request of its session registers it again, so
+   * that {@link #getState(StateKey)} answers each key listed here.
+   *
    * @param userId the user's identifier.
-   * @return list of users ConversationState.
+   * @return the keys of the user's current conversations on this node
    */
   public List<StateKey> getStateKeys(String userId) {
-    return stateKeysCache.get(userId) == null ? Collections.emptyList(): new ArrayList<>(stateKeysCache.get(userId));
+    Set<StateKey> stateKeys = stateKeysCache.get(userId);
+    if (stateKeys == null) {
+      return Collections.emptyList();
+    }
+    List<StateKey> currentKeys = new ArrayList<>();
+    for (StateKey key : stateKeys) {
+      if (getState(key) != null) {
+        currentKeys.add(key);
+      }
+    }
+    return currentKeys;
   }
 
   /**

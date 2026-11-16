@@ -154,6 +154,41 @@ public class TestConversationRegistryInvalidation extends TestCase {
   }
 
   /**
+   * A conversation no longer current is not listed, so that each key listed
+   * has a state, until its session's next request registers it again
+   */
+  public void testTheKeysOfConversationsNoLongerCurrentAreNotListed() {
+    ConversationRegistry nodeA = newNode();
+    ConversationRegistry nodeB = newNode();
+    StateKey first = new SimpleStateKey("first");
+    StateKey second = new SimpleStateKey("second");
+    nodeB.register(first, new ConversationState(new Identity("john")));
+    nodeB.register(second, new ConversationState(new Identity("john")));
+
+    nodeA.invalidateUser("john");
+    assertEquals(List.of(), nodeB.getStateKeys("john"));
+
+    nodeB.register(first, new ConversationState(new Identity("john")));
+    assertEquals(List.of(first), nodeB.getStateKeys("john"));
+    assertNotNull(nodeB.getState(first));
+  }
+
+  /**
+   * A new session of a user whose other sessions are no longer current is not
+   * the user's login: its registration broadcasts no login
+   */
+  public void testANewSessionBesideConversationsNoLongerCurrentBroadcastsNoLogin() {
+    ConversationRegistry nodeA = newNode();
+    ConversationRegistry nodeB = newNode();
+    nodeB.register(new SimpleStateKey("first"), new ConversationState(new Identity("john")));
+    nodeA.invalidateUser("john");
+    events.clear();
+
+    nodeB.register(new SimpleStateKey("second"), new ConversationState(new Identity("john")));
+    assertEquals(List.of(), events);
+  }
+
+  /**
    * Each session of the user is built again: the rebuild of one does not make
    * the other sessions' conversations current again
    */
