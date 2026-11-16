@@ -275,8 +275,11 @@ public final class ConversationRegistry {
     if (stateKeys == null) {
       return Collections.emptyList();
     }
-    List<StateKey> currentKeys = new ArrayList<>();
-    for (StateKey key : stateKeys) {
+    // A copy first: the set is shared with the registrations of the user's
+    // other sessions, and its synchronized toArray reads it under its lock
+    List<StateKey> keys = new ArrayList<>(stateKeys);
+    List<StateKey> currentKeys = new ArrayList<>(keys.size());
+    for (StateKey key : keys) {
       if (getState(key) != null) {
         currentKeys.add(key);
       }

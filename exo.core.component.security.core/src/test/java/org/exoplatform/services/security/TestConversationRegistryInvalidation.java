@@ -24,12 +24,15 @@ import static org.junit.Assert.assertNotEquals;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.TestCase;
 
@@ -273,8 +276,42 @@ public class TestConversationRegistryInvalidation extends TestCase {
     assertEquals(List.of(10L), delays);
   }
 
+  /**
+   * Another session of the user registering while the user's keys are listed
+   * does not break the listing, which reads a copy of the keys
+   */
+  public void testASessionRegisteredWhileTheKeysAreListedDoesNotBreakTheListing() {
+    ConversationRegistry[] node = new ConversationRegistry[1];
+    StateKey first = new SimpleStateKey("first");
+    StateKey second = new SimpleStateKey("second");
+    StateKey late = new SimpleStateKey("late");
+    AtomicBoolean listing = new AtomicBoolean();
+    ExoCache<Serializable, Object> states = new ConcurrentFIFOExoCache<>("portal.ConversationRegistry", 100) {
+      @Override
+      public Object get(Serializable name) {
+        if (listing.getAndSet(false)) {
+          node[0].register(late, new ConversationState(new Identity("john")));
+        }
+        return super.get(name);
+      }
+    };
+    node[0] = newNode(Map.of("portal.ConversationRegistry", states));
+    node[0].register(first, new ConversationState(new Identity("john")));
+    node[0].register(second, new ConversationState(new Identity("john")));
+
+    listing.set(true);
+    List<StateKey> keys = node[0].getStateKeys("john");
+
+    assertEquals(Set.of(first, second), new HashSet<>(keys));
+    assertEquals(Set.of(first, second, late), new HashSet<>(node[0].getStateKeys("john")));
+  }
+
   private ConversationRegistry newNode() {
-    Map<String, ExoCache<? extends Serializable, ?>> caches = new HashMap<>();
+    return newNode(Map.of());
+  }
+
+  private ConversationRegistry newNode(Map<String, ExoCache<? extends Serializable, ?>> ownCaches) {
+    Map<String, ExoCache<? extends Serializable, ?>> caches = new HashMap<>(ownCaches);
     caches.put("portal.ConversationRegistryUsers", new InvalidatingExoCache<>("portal.ConversationRegistryUsers", users));
     caches.put("portal.IdentityRegistry", new InvalidatingExoCache<>("portal.IdentityRegistry", identities));
     CacheService cacheService = new CacheService() {
