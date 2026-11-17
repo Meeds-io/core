@@ -25,12 +25,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.picocontainer.Startable;
 
 import org.exoplatform.services.cache.CacheService;
 import org.exoplatform.services.cache.ExoCache;
@@ -41,7 +43,7 @@ import org.exoplatform.services.log.Log;
 /**
  * In-memory registry of user's sessions
  */
-public final class ConversationRegistry {
+public final class ConversationRegistry implements Startable {
 
   private static final String                         CACHE_NAME      = "portal.ConversationRegistry";
 
@@ -62,12 +64,10 @@ public final class ConversationRegistry {
    */
   static final long                                   REINVALIDATION_DELAY_SECONDS = 10;
 
-  private static final ScheduledExecutorService       REINVALIDATION  = Executors.newSingleThreadScheduledExecutor(task -> {
-                                                                        Thread thread = new Thread(task,
-                                                                                                   "ConversationRegistry-reinvalidation");
-                                                                        thread.setDaemon(true);
-                                                                        return thread;
-                                                                      });
+  /**
+   * How long, beyond the delay, the stop waits for the delayed removals
+   */
+  private static final long                           STOP_MARGIN_SECONDS          = 2;
 
   private static final Log                            LOG             = ExoLogger.getLogger(ConversationRegistry.class);
 
@@ -93,10 +93,28 @@ public final class ConversationRegistry {
 
   private final Consumer<Runnable>                    delayedRun;
 
+  /**
+   * The scheduler of the delayed removals, owned by this registry and shut
+   * down at its stop, once the removals waiting have run; null when the
+   * delayed runs are given
+   */
+  private final ScheduledExecutorService              reinvalidation;
+
   public ConversationRegistry(IdentityRegistry identityRegistry,
                               ListenerService listenerService,
                               CacheService cacheService) {
-    this(identityRegistry, listenerService, cacheService, delayedOn(REINVALIDATION));
+    this(identityRegistry, listenerService, cacheService, newReinvalidationScheduler());
+  }
+
+  /**
+   * @param reinvalidation the scheduler the delayed removals run on, shut down
+   *          at the stop of this registry once the removals waiting have run
+   */
+  ConversationRegistry(IdentityRegistry identityRegistry,
+                       ListenerService listenerService,
+                       CacheService cacheService,
+                       ScheduledExecutorService reinvalidation) {
+    this(identityRegistry, listenerService, cacheService, delayedOn(reinvalidation), reinvalidation);
   }
 
   /**
@@ -106,7 +124,16 @@ public final class ConversationRegistry {
                        ListenerService listenerService,
                        CacheService cacheService,
                        Consumer<Runnable> delayedRun) {
+    this(identityRegistry, listenerService, cacheService, delayedRun, null);
+  }
+
+  private ConversationRegistry(IdentityRegistry identityRegistry,
+                               ListenerService listenerService,
+                               CacheService cacheService,
+                               Consumer<Runnable> delayedRun,
+                               ScheduledExecutorService reinvalidation) {
     this.delayedRun = delayedRun;
+    this.reinvalidation = reinvalidation;
     this.statesCache = cacheService.getCacheInstance(CACHE_NAME);
     this.stateKeysCache = cacheService.getCacheInstance(STATE_KEYS_NAME);
     this.usersCache = cacheService.getCacheInstance(USERS_NAME);
@@ -323,7 +350,49 @@ public final class ConversationRegistry {
    * @return what runs a task {@link #REINVALIDATION_DELAY_SECONDS} later on it
    */
   static Consumer<Runnable> delayedOn(ScheduledExecutorService executor) {
-    return task -> executor.schedule(task, REINVALIDATION_DELAY_SECONDS, TimeUnit.SECONDS);
+    return task -> {
+      try {
+        executor.schedule(task, REINVALIDATION_DELAY_SECONDS, TimeUnit.SECONDS);
+      } catch (RejectedExecutionException e) {
+        // The registry stopped: the removal made at once is the only one
+        LOG.debug("The registry stopped: no delayed removal is scheduled", e);
+      }
+    };
+  }
+
+  @Override
+  public void start() {
+    // The scheduler runs from the construction
+  }
+
+  /**
+   * Stops the scheduler of the delayed removals once the removals waiting have
+   * run: each is meant for the other nodes, which keep running, and the caches
+   * are still started when the registry stops. The stop waits up to
+   * {@link #REINVALIDATION_DELAY_SECONDS} seconds, and only when a user changed
+   * within that delay.
+   */
+  @Override
+  public void stop() {
+    if (reinvalidation != null) {
+      reinvalidation.shutdown();
+      try {
+        if (!reinvalidation.awaitTermination(REINVALIDATION_DELAY_SECONDS + STOP_MARGIN_SECONDS, TimeUnit.SECONDS)) {
+          LOG.warn("A delayed removal of conversations did not end within {} seconds of the stop",
+                   REINVALIDATION_DELAY_SECONDS + STOP_MARGIN_SECONDS);
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+  private static ScheduledExecutorService newReinvalidationScheduler() {
+    return Executors.newSingleThreadScheduledExecutor(task -> {
+      Thread thread = new Thread(task, "ConversationRegistry-reinvalidation");
+      thread.setDaemon(true);
+      return thread;
+    });
   }
 
   private void removeUser(String userId) {
