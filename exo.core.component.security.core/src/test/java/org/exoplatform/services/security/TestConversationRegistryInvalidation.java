@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -306,11 +307,63 @@ public class TestConversationRegistryInvalidation extends TestCase {
     assertEquals(Set.of(first, second, late), new HashSet<>(node[0].getStateKeys("john")));
   }
 
+  /**
+   * The stop of the registry runs the delayed removal still waiting, for the
+   * other nodes, then ends its scheduler: a conversation registered after the
+   * first removal is built again
+   */
+  public void testTheStopRunsTheWaitingRemovalsThenEndsTheScheduler() {
+    ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1) {
+      @Override
+      public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+        // The delay of the registry, shortened for the test
+        return super.schedule(command, 200, TimeUnit.MILLISECONDS);
+      }
+    };
+    ConversationRegistry node = newNode(Map.of(), scheduler);
+    node.register(new SimpleStateKey("before"), new ConversationState(new Identity("john")));
+    node.invalidateUser("john");
+    StateKey registeredMeanwhile = new SimpleStateKey("meanwhile");
+    node.register(registeredMeanwhile, new ConversationState(new Identity("john")));
+    assertNotNull(node.getState(registeredMeanwhile));
+
+    node.stop();
+
+    assertTrue(scheduler.isTerminated());
+    assertNull("The waiting removal ran before the stop ended", node.getState(registeredMeanwhile));
+  }
+
+  /**
+   * A change of the user after the stop removes the user's conversations at
+   * once and schedules nothing, without failing
+   */
+  public void testAChangeAfterTheStopRemovesTheUserWithoutFailing() {
+    ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
+    ConversationRegistry node = newNode(Map.of(), scheduler);
+    StateKey session = new SimpleStateKey("session");
+    node.register(session, new ConversationState(new Identity("john")));
+    node.stop();
+
+    node.invalidateUser("john");
+
+    assertNull(node.getState(session));
+    assertTrue(scheduler.getQueue().isEmpty());
+  }
+
   private ConversationRegistry newNode() {
     return newNode(Map.of());
   }
 
   private ConversationRegistry newNode(Map<String, ExoCache<? extends Serializable, ?>> ownCaches) {
+    return newNode(ownCaches, null);
+  }
+
+  /**
+   * @param scheduler the scheduler the delayed removals run on, or null to
+   *          collect them in {@link #delayed}
+   */
+  private ConversationRegistry newNode(Map<String, ExoCache<? extends Serializable, ?>> ownCaches,
+                                       ScheduledExecutorService scheduler) {
     Map<String, ExoCache<? extends Serializable, ?>> caches = new HashMap<>(ownCaches);
     caches.put("portal.ConversationRegistryUsers", new InvalidatingExoCache<>("portal.ConversationRegistryUsers", users));
     caches.put("portal.IdentityRegistry", new InvalidatingExoCache<>("portal.IdentityRegistry", identities));
@@ -340,7 +393,9 @@ public class TestConversationRegistryInvalidation extends TestCase {
         }
       });
     }
-    return new ConversationRegistry(new IdentityRegistry(cacheService), listenerService, cacheService, delayed::add);
+    IdentityRegistry identityRegistry = new IdentityRegistry(cacheService);
+    return scheduler == null ? new ConversationRegistry(identityRegistry, listenerService, cacheService, delayed::add)
+                             : new ConversationRegistry(identityRegistry, listenerService, cacheService, scheduler);
   }
 
 }
